@@ -2,8 +2,6 @@
 const { app, mock, assert  } = require('egg-mock/bootstrap');
 const fs = require("fs");
 
-const queue = require("../../app/core/queue.js");
-
 function rmdir(path){
     let files = [];
     if (fs.existsSync(path)) {

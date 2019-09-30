@@ -4,8 +4,7 @@ const _fs = require("fs");
 const _ = require("lodash");
 const Service = require('egg').Service;
 const Git = require("nodegit");
-
-const queue = require("../core/queue.js");
+const AsyncQueue = require("@wxaxiaoyao/async-queue");
 
 class GitService extends Service {
 	get repositoryDir() {
@@ -166,7 +165,7 @@ class GitService extends Service {
 		message = message || `save file ${filename}`;
 		committer = committer || "anonymous";
 
-		return await queue(repodir, async () => {
+		return await AsyncQueue.exec(repodir, async () => {
 			// 打开仓库
 			const repo = await this.openRepository({path: repodir});
 			if (!repo) {
@@ -246,7 +245,7 @@ class GitService extends Service {
 		message = message || `delete file ${filename}`;
 		committer = committer || "anonymous";
 
-		return await queue(repodir, async () => {
+		return await AsyncQueue.exec(repodir, async () => {
 			// 打开仓库
 			const repo = await this.openRepository({path: repodir});
 			if (!repo) {
