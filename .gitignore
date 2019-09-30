@@ -21,4 +21,6 @@ yarn.lock
 
 repository/
 config/config.local.js
+config/config.prod.js
+config/config.rls.js
 config/config.unittest.js

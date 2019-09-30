@@ -72,8 +72,6 @@ class Index extends Controller {
 	}
 
 	async index() {
-		await this.git_index();
-		
 		this.ctx.body = "hello world";
 	}
 }
