@@ -8,7 +8,7 @@ const AsyncQueue = require("@wxaxiaoyao/async-queue");
 
 class GitService extends Service {
 	get repositoryDir() {
-		return this.config.self.repositoryDir;
+		return this.config.GitService.fileStorePath;
 	}
 
 	lock(path) {

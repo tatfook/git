@@ -17,7 +17,7 @@ function getAuthorizationHeaderToken(ctx) {
 }
 
 module.exports = (options, app) => {
-	const config = app.config.self;
+	const config = app.config.GitServer;
 	return async function(ctx, next) {
 		const token = getCookieToken(ctx) || getAuthorizationHeaderToken(ctx) || ctx.query.token || "";
 

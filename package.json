@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "egg-scripts start",
     "dev": "egg-bin dev",
     "test": "egg-bin test"
   },

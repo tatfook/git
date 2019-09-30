@@ -16,6 +16,10 @@ class BaseController extends Controller {
 		return this.app.log;
 	}
 
+	get GitServerConfig() {
+		return this.app.config.GitServer;
+	}
+
 	validate(schema, data, options = {allowUnknown:true}) {
 		return this.ctx.validate(schema, data, options);
 	}
