@@ -8,21 +8,28 @@ const AsyncQueue = require("@wxaxiaoyao/async-queue");
 
 class GitService extends Service {
 	get repositoryDir() {
-		return this.config.GitService.fileStorePath;
+		return this.config.GitServer.fileStorePath;
 	}
 
-	lock(path) {
-		path = _path.join(path, ".repository.lock");
-		try {
-			return _fs.openSync(path, "wx");
-		} catch(e) {
-			console.log(e);
-			return 0;
-		} 
+	async lock(path, timeout = 0) {
+		path = _path.join(path, ".lock");
+		const startTime = _.now();
+		return new Promise((resolve, reject) => {
+			const _lock = () => {
+				try {
+					return resolve(_fs.openSync(path, "wx"));
+				} catch(e) {
+					if (timeout && (_.now() - startTime) > timeout) return resolve(0);
+					console.log("仓库被锁定, 等待解锁");
+					setTimeout(_lock, 100);
+				} 
+			}
+			return _lock();
+		});
 	}
 
 	unlock(fd, path) {
-		path = _path.join(path, ".repository.lock");
+		path = _path.join(path, ".lock");
 		_fs.closeSync(fd);
 		_fs.unlinkSync(path)
 	}
@@ -173,7 +180,8 @@ class GitService extends Service {
 				return;
 			} 
 
-			const lockfd = this.lock(repodir);
+			// 进程锁
+			const lockfd = await this.lock(repodir);
 			if (!lockfd) return console.log("this repository already lock!!!");
 
 			// 获取缓存区
@@ -253,7 +261,7 @@ class GitService extends Service {
 				return;
 			} 
 
-			const lockfd = this.lock(repodir);
+			const lockfd = await this.lock(repodir);
 			if (!lockfd) return console.log("this repository already lock!!!");
 
 			// 获取缓存区
