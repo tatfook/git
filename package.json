@@ -6,14 +6,14 @@
   "scripts": {
     "start": "egg-scripts start",
     "start2": "egg-scripts start --daemon --title=git",
-	"stop": "egg-scripts stop --title=git",
+    "stop": "egg-scripts stop --title=git",
     "dev": "egg-bin dev",
     "test": "egg-bin test"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@wxaxiaoyao/async-queue": "^1.0.0",
+    "@wxaxiaoyao/async-queue": "^1.0.2",
     "async-lock": "^1.2.2",
     "egg": "^2.23.0",
     "egg-scripts": "^2.11.0",

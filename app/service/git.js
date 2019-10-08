@@ -17,9 +17,10 @@ class GitService extends Service {
 		return new Promise((resolve, reject) => {
 			const _lock = () => {
 				try {
-					return resolve(_fs.openSync(path, "wx"));
+					_fs.mkdirSync(path);
+					return resolve(true);
 				} catch(e) {
-					if (timeout && (_.now() - startTime) > timeout) return resolve(0);
+					if (timeout && (_.now() - startTime) > timeout) return resolve(false);
 					console.log("仓库被锁定, 等待解锁");
 					setTimeout(_lock, 100);
 				} 
@@ -28,10 +29,9 @@ class GitService extends Service {
 		});
 	}
 
-	unlock(fd, path) {
+	unlock(path) {
 		path = _path.join(path, ".lock");
-		_fs.closeSync(fd);
-		_fs.unlinkSync(path)
+		_fs.rmdirSync(path);
 	}
 
 	async openRepository({path}) {
@@ -181,8 +181,8 @@ class GitService extends Service {
 			} 
 
 			// 进程锁
-			const lockfd = await this.lock(repodir);
-			if (!lockfd) return console.log("this repository already lock!!!");
+			const ok = await this.lock(repodir, 60000);
+			if (!ok) return console.log("this repository already lock!!!");
 
 			// 获取缓存区
 			const index = await repo.refreshIndex();
@@ -227,7 +227,7 @@ class GitService extends Service {
 			const commit = await repo.createCommit("HEAD", author, _committer, message, tree, headCommit == null ? null : [headCommit]);
 
 			const blob = await repo.getBlob(indexEntry.id);
-			this.unlock(lockfd, repodir);
+			this.unlock(repodir);
 			//console.log("---------------------save file finish-----------------------");
 			//return commit;
 			return {
@@ -261,8 +261,8 @@ class GitService extends Service {
 				return;
 			} 
 
-			const lockfd = await this.lock(repodir);
-			if (!lockfd) return console.log("this repository already lock!!!");
+			const ok = await this.lock(repodir, 60000);
+			if (!ok) return console.log("this repository already lock!!!");
 
 			// 获取缓存区
 			const index = await repo.refreshIndex();
@@ -295,7 +295,7 @@ class GitService extends Service {
 			// 提交
 			const commit = await repo.createCommit("HEAD", author, _committer, message, tree, headCommit == null ? null : [headCommit]);
 
-			this.unlock(lockfd, repodir);
+			this.unlock(repodir);
 			//console.log("---------------------delete file finish-----------------------");
 			return commit;
 		});
