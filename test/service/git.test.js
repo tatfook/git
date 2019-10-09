@@ -25,13 +25,18 @@ describe("git", () => {
 
 		// 移除仓库
 		//fs.rmdirSync("repository/test.git", {recursive: true});
-		rmdir("repository/test");
+		rmdir("data/git/test.git");
 
 		let commit = await git.saveFile({
 			path: "test/file.txt",
 			content: "hello world",
 		});
 		assert(commit);
+
+		commit = await git.saveFile({
+			path: "test/file1.txt",
+			content: "hello world",
+		});
 
 		commit = await git.saveFile({
 			path: "test/dir/file.txt",
