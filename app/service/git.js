@@ -181,7 +181,7 @@ class GitService extends Service {
 			} 
 
 			// 进程锁
-			const ok = await this.lock(repodir, 60000);
+			const ok = await this.lock(repodir, 10000);
 			if (!ok) return console.log("this repository already lock!!!");
 
 			// 获取缓存区
@@ -261,7 +261,7 @@ class GitService extends Service {
 				return;
 			} 
 
-			const ok = await this.lock(repodir, 60000);
+			const ok = await this.lock(repodir, 10000);
 			if (!ok) return console.log("this repository already lock!!!");
 
 			// 获取缓存区

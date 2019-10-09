@@ -15,6 +15,7 @@
   "dependencies": {
     "@wxaxiaoyao/async-queue": "^1.0.2",
     "async-lock": "^1.2.2",
+    "axios": "^0.19.0",
     "egg": "^2.23.0",
     "egg-scripts": "^2.11.0",
     "joi": "^14.3.1",
