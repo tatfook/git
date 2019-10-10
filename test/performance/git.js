@@ -11,7 +11,7 @@ const run = async () => {
 	for (let i = 0; i < 100; i++) {
 		const promises = [];
 		const startTime = _.now();
-		for (let j = 0; j < 50; j++) { 
+		for (let j = 0; j < 500; j++) { 
 			const repo = `repo${j}`;
 			//const filename = _.fill(Array(_.random(1, 3)), _.random(1, 100)).join("/");
 			const filename = _.random(0, 10000000);

@@ -5,6 +5,10 @@ const Controller = require("../core/controller.js");
 
 class File extends Controller {
 
+	get gitStore() {
+		return this.app.gitStore;
+	}
+
 	async show() {
 		const {uid} = this.authenticated();
 
@@ -15,8 +19,8 @@ class File extends Controller {
 
 		params.path = uid + _path.sep + params.path;
 
-		const file = await this.ctx.service.git.getFile(params);
-		if (!file) return this.throw(404);
+		const file = await this.gitStore.getFile(params).catch(e => undefined);
+		if (!file) return this.fail("Not Found", 404);
 
 		file.rawcontent = undefined;
 
@@ -39,7 +43,7 @@ class File extends Controller {
 
 		params.path = uid + _path.sep + params.path;
 
-		const data = await this.ctx.service.git.saveFile(params);
+		const data = await this.gitStore.saveFile(params);
 
 		return this.success(data);
 	}
@@ -55,7 +59,7 @@ class File extends Controller {
 
 		params.path = uid + _path.sep + params.path;
 
-		const data = await this.ctx.service.git.deleteFile(params);
+		const data = await this.gitStore.deleteFile(params);
 
 		return this.success(data);
 	}
@@ -71,7 +75,7 @@ class File extends Controller {
 
 		params.path = uid + _path.sep + params.path;
 		
-		const list = await this.ctx.service.git.history(params)
+		const list = await this.gitStore.history(params)
 
 		return this.success(list);
 	}
