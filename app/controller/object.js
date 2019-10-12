@@ -3,7 +3,7 @@ const Git = require("nodegit");
 
 const Controller = require("../core/controller.js");
 
-class File extends Controller {
+class Object_ extends Controller {
 
 	get gitStore() {
 		return this.app.gitStore;
@@ -12,18 +12,18 @@ class File extends Controller {
 	parseParams(rule = {}) {
 		const {uid} = this.authenticated();
 
-		const params = this.validate({...rule, repopath: "string", filepath:"string"});
+		const params = this.validate({...rule, path: "string"});
 
-		params.repopath = _path.join(`${uid}`, params.repopath);
-		params.ref = params.ref || "master";
+		const path = _path.join(uid, params.path);
+		const obj = _path.parse(path);
+		params.repopath = obj.dir;
+		params.filepath = obj.base;
 		
 		return params;
 	}
 
 	async show() {
 		const params = this.parseParams({
-			repopath: "string",
-			filepath: "string",
 			commitId: "string_optional",
 		});
 
@@ -35,10 +35,13 @@ class File extends Controller {
 		return this.success(file);
 	}
 
+	async rowcontent() {
+		// 二进制数据
+	}
+
 	async save() {
 		const params = this.parseParams({
-			repopath: "string",
-			filepath: "string",
+			path: "string",
 			content: "string_optional",
 			committer: "string_optional",
 			message: "string_optional",
@@ -51,8 +54,7 @@ class File extends Controller {
 
 	async destroy() {
 		const params = this.parseParams({
-			repopath: "string",
-			filepath: "string",
+			path: "string",
 			committer: "string_optional",
 			message: "string_optional",
 		});
@@ -64,12 +66,11 @@ class File extends Controller {
 
 	async history() {
 		const params = this.parseParams({
-			repopath: "string",
-			filepath: "string",
+			path: "string",
 			commitId: "string_optional",
 			maxCount: "number_optional",
 		});
-
+		
 		const list = await this.gitStore.history(params)
 
 		return this.success(list);
@@ -77,4 +78,4 @@ class File extends Controller {
 
 }
 
-module.exports = File;
+module.exports = Object_;

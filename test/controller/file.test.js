@@ -24,28 +24,31 @@ describe("file", () => {
 
 	it("001 repository file", async () => {
 		const ctx = app.mockContext();
-		const git = ctx.service.git;
 		const token = "keepwork";
-		const path = "test/file.txt";
+		const filepath = "test/file.txt";
+		const repopath = "test";
 
 		// 移除仓库
 		//fs.rmdirSync("repository/test.git", {recursive: true});
-		rmdir("data/git/1/test.git");
+		rmdir("data/git/1/test");
 
 		// 保存文件
 		const files = await Promise.all([
 			await app.httpRequest().post("/api/v0/file").send({
-				path: "test/file.txt",
+				repopath,
+				filepath: "test/file.txt",
 				content: "hello world",
 			}).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body),
 
 			await app.httpRequest().post("/api/v0/file").send({
-				path: "test/dir/file.txt",
+				repopath,
+				filepath: "test/dir/file.txt",
 				content: "hello world",
 			}).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body),
 
 			await app.httpRequest().post("/api/v0/file").send({
-				path: "test/file.txt",
+				repopath,
+				filepath: "test/file.txt",
 				content: "hello world2",
 			}).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body),
 
@@ -54,25 +57,26 @@ describe("file", () => {
 
 		// 移除文件
 		const commit = await app.httpRequest().delete("/api/v0/file").send({
-			path: "test/file.txt",
+			repopath,
+			filepath: "test/file.txt",
 		}).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
 		assert(commit);
 
 		// 提交历史
-		const list = await app.httpRequest().get(`/api/v0/file/history?path=${path}`).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
+		const list = await app.httpRequest().get(`/api/v0/file/history?filepath=${filepath}&repopath=${repopath}`).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
 		console.log(list);
 		assert(list.length == 3);
 
 		let commitId = list[0].commitId;
-		let file = await app.httpRequest().get(`/api/v0/file?path=${path}&commitId=${commitId}`).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 404)).catch(_ => {});
+		let file = await app.httpRequest().get(`/api/v0/file?filepath=${filepath}&repopath=${repopath}&commitId=${commitId}`).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 404)).catch(_ => {});
 
 		commitId = list[1].commitId;
-		file = await app.httpRequest().get(`/api/v0/file?path=${path}&commitId=${commitId}`).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
+		file = await app.httpRequest().get(`/api/v0/file?filepath=${filepath}&repopath=${repopath}&commitId=${commitId}`).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
 		console.log(file);
 		assert(file.content, "hello world");
 
 		commitId = list[2].commitId;
-		file = await app.httpRequest().get(`/api/v0/file?path=${path}&commitId=${commitId}`).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
+		file = await app.httpRequest().get(`/api/v0/file?filepath=${filepath}&repopath=${repopath}&commitId=${commitId}`).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
 		//console.log(file);
 		assert(file.content, "hello world 2");
 	});
