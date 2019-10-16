@@ -30,7 +30,7 @@ describe("file", () => {
 
 		// 移除仓库
 		//fs.rmdirSync("repository/test.git", {recursive: true});
-		rmdir("data/git/1/test");
+		rmdir("data/git");
 
 		// 保存文件
 		const files = await Promise.all([
@@ -55,6 +55,12 @@ describe("file", () => {
 		]);
 		assert(files.length == 3);
 
+		const archive = await app.httpRequest().get("/api/v0/file/archive").send({
+			repopath,
+			filepath: "test/file.txt",
+		}).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
+		fs.writeFileSync("archive.zip", archive);
+		
 		// 移除文件
 		const commit = await app.httpRequest().delete("/api/v0/file").send({
 			repopath,
@@ -64,7 +70,7 @@ describe("file", () => {
 
 		// 提交历史
 		const list = await app.httpRequest().get(`/api/v0/file/history?filepath=${filepath}&repopath=${repopath}`).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
-		console.log(list);
+		//console.log(list);
 		assert(list.length == 3);
 
 		let commitId = list[0].commitId;
@@ -72,7 +78,7 @@ describe("file", () => {
 
 		commitId = list[1].commitId;
 		file = await app.httpRequest().get(`/api/v0/file?filepath=${filepath}&repopath=${repopath}&commitId=${commitId}`).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
-		console.log(file);
+		//console.log(file);
 		assert(file.content, "hello world");
 
 		commitId = list[2].commitId;

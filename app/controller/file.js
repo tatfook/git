@@ -1,4 +1,5 @@
 const _path = require("path");
+const _fs = require("fs");
 const Git = require("nodegit");
 
 const Controller = require("../core/controller.js");
@@ -35,11 +36,27 @@ class File extends Controller {
 		return this.success(file);
 	}
 
+	async raw() {
+		const params = this.parseParams({
+			repopath: "string",
+			filepath: "string",
+			commitId: "string_optional",
+		});
+
+		const file = await this.gitStore.getFile(params).catch(e => undefined);
+		if (!file) return this.fail("Not Found", 404);
+
+		const raw = file.rawcontent;
+
+		this.ctx.set("Content-Type", "application/octet-stream");
+		return this.success(raw);
+	}
+
 	async save() {
 		const params = this.parseParams({
 			repopath: "string",
 			filepath: "string",
-			content: "string_optional",
+			//content: "string_optional",
 			committer: "string_optional",
 			message: "string_optional",
 		});
@@ -75,6 +92,52 @@ class File extends Controller {
 		return this.success(list);
 	}
 
+	async getTreeByPath() {
+		const params = this.parseParams({
+			repopath: "string",
+			filepath: "string",
+			recursive: "boolean_optional",
+			ref: "string_optional",
+		});
+
+		const tree = await this.gitStore.getTree(args);
+
+		return this.success(tree);
+	}
+
+	async getTreeById() {
+		const params = this.parseParams({
+			repopath: "string",
+			id: "string",
+			recursive: "boolean_optional",
+		});
+
+		const tree = await this.gitStore.getTreeById(args);
+
+		return this.success(tree);
+	}
+
+	async getArchive() {
+		const params = this.parseParams({
+			repopath: "string",
+			ref:"string_optional",
+		});
+		
+		const filepath = await this.gitStore.createArchive(params);
+		const filestream = _fs.createReadStream(filepath, {emitClose: true});
+
+		filestream.on("close", () => {
+			_fs.unlinkSync(filepath);
+		});
+
+		this.ctx.set("Content-Description", "File Transfer");
+		this.ctx.set("Content-Type", "application/octet-stream");
+		this.ctx.set("Content-Transfer-Encoding", "binary");
+		this.ctx.set("Expires", "0");
+		this.ctx.set("Cache-Control", "must-revalidate");
+		this.ctx.set("Pragma", "public");
+		this.ctx.body = filestream;
+	}
 }
 
 module.exports = File;

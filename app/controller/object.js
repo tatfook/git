@@ -35,10 +35,6 @@ class Object_ extends Controller {
 		return this.success(file);
 	}
 
-	async rowcontent() {
-		// 二进制数据
-	}
-
 	async save() {
 		const params = this.parseParams({
 			path: "string",
