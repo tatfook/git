@@ -1,6 +1,7 @@
 
 const { app, mock, assert  } = require('egg-mock/bootstrap');
 const fs = require("fs");
+const base64 = require('js-base64').Base64;
 
 function rmdir(path){
     let files = [];
@@ -37,19 +38,22 @@ describe("file", () => {
 			await app.httpRequest().post("/api/v0/file").send({
 				repopath,
 				filepath: "test/file.txt",
-				content: "hello world",
+				encoding: "base64",
+				content: base64.encode("hello world"),
 			}).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body),
 
 			await app.httpRequest().post("/api/v0/file").send({
 				repopath,
 				filepath: "test/dir/file.txt",
-				content: "hello world",
+				encoding: "base64",
+				content: base64.encode("hello world"),
 			}).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body),
 
 			await app.httpRequest().post("/api/v0/file").send({
 				repopath,
 				filepath: "test/file.txt",
-				content: "hello world2",
+				encoding: "base64",
+				content: base64.encode("hello world2"),
 			}).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body),
 
 		]);
@@ -78,13 +82,12 @@ describe("file", () => {
 
 		commitId = list[1].commitId;
 		file = await app.httpRequest().get(`/api/v0/file?filepath=${filepath}&repopath=${repopath}&commitId=${commitId}`).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
-		//console.log(file);
-		assert(file.content, "hello world");
+		assert(base64.decode(file.content), "hello world2");
 
 		commitId = list[2].commitId;
 		file = await app.httpRequest().get(`/api/v0/file?filepath=${filepath}&repopath=${repopath}&commitId=${commitId}`).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
 		//console.log(file);
-		assert(file.content, "hello world 2");
+		assert(base64.decode(file.content), "hello world");
 	});
 });
 
