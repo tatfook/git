@@ -48,8 +48,8 @@ describe("world", () => {
 			await app.httpRequest().post("/api/v0/file").send({
 				repopath,
 				filepath,
-				//content: content,
-				content: content.toString("hex"),
+				encoding: "base64",
+				content: content.toString("base64"),
 			}).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
 			await app.httpRequest().get(`/api/v0/file/raw?filepath=${filepath}&repopath=${repopath}`).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body).catch(e => console.log("not fount:--------", filepath));
 			//console.log(file);
@@ -67,16 +67,16 @@ describe("world", () => {
 	it("002 file encoding", async () => {
 		const filepath = 'data/world/preview.jpg';
 		const buf = fs.readFileSync(filepath);
-		console.log("size: ", buf.length);
-		const json = {filepath, content: buf.toString("hex")};
+		console.log("buf: ", buf.length);
+		const str = buf.toString();
+		console.log("str: ", str.length);
+		const newbuf = Buffer.from(str, "utf8");
+		console.log("newbuf: ", newbuf.length);
 
-		const newbuf = Buffer.from(json.content, "hex");
-		console.log("new size: ", newbuf.length);
-
-		let b = Buffer([11,11]);
+		const b = Buffer.from("hello world");
 		console.log(b.length);
-		b = Buffer.from(b.toString("utf8"), "utf8");
-		console.log(b.length);
+		const bb = Buffer.from(b.toString("utf8"), "utf8");
+		console.log(bb.length);
 	});
 });
 
