@@ -1,5 +1,6 @@
 const _path = require("path");
 const _fs = require("fs");
+const mime = require("mime");
 const Git = require("nodegit");
 
 const Controller = require("../core/controller.js");
@@ -11,6 +12,7 @@ class File extends Controller {
 	}
 
 	parseParams(rule = {}) {
+		//const uid = "";
 		const {uid} = this.authenticated();
 
 		const params = this.validate({...rule, repopath: "string", filepath:"string"});
@@ -31,7 +33,7 @@ class File extends Controller {
 		const file = await this.gitStore.getFile(params).catch(e => undefined);
 		if (!file) return this.fail("Not Found", 404);
 
-		file.rawcontent = undefined;
+		file.content = file.content.toString();
 
 		return this.success(file);
 	}
@@ -43,20 +45,29 @@ class File extends Controller {
 			commitId: "string_optional",
 		});
 
+		const filename = _path.basename(params.filepath);
 		const file = await this.gitStore.getFile(params).catch(e => undefined);
 		if (!file) return this.fail("Not Found", 404);
+		this.ctx.set("Cache-Control", "public, max-age=86400");
+		const mimeType = mime.getType(filename);
+		if (mimeType) {
+			this.ctx.set("Content-Type", mimeType);
+			if (mimeType.indexOf("text/") == 0) {
+			} else if(mimeType.indexOf('image/') == 0) {
+				this.ctx.set("Content-Disposition", `inline; filename=${filename}`);
+			} else {
+				this.ctx.set("Content-Disposition", `attachment; filename=${filename}`);
+			}
+		}
 
-		const raw = file.rawcontent;
-
-		this.ctx.set("Content-Type", "application/octet-stream");
-		return this.success(raw);
+		return this.success(file.binary ? file.content : file.content.toString());
 	}
 
 	async save() {
 		const params = this.parseParams({
 			repopath: "string",
 			filepath: "string",
-			//content: "string_optional",
+			content: "string_optional",
 			committer: "string_optional",
 			message: "string_optional",
 		});

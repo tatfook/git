@@ -5,7 +5,7 @@ const rules = {
 	"number": joi.number().required(),
 	"number_optional": joi.number(),
 	"string": joi.string().required(),
-	"string_optional": joi.string(),
+	"string_optional": joi.string().empty(''),
 	"boolean": joi.boolean().required(),
 	"boolean_optional": joi.boolean(),
 }
@@ -22,6 +22,7 @@ module.exports = {
 		const result = joi.validate(params, schema, options);
 
 		if (result.error) {
+			console.log(this.request.body);
 			const errmsg = result.error.details[0].message.replace(/"/g, '');
 			this.throw(400, "invalid params:" + errmsg);
 		}

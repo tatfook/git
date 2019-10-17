@@ -40,23 +40,26 @@ describe("world", () => {
 
 		const files = getFiles(worldpath);
 		for (let i = 0; i < files.length; i++) {
-			const filepath = files[i];
+			const file = files[i];
 			//const content = fs.readFileSync(filepath, {encoding: "utf8"});
-			const content = fs.readFileSync(filepath);
-			console.log(filepath, content.length);
+			const content = fs.readFileSync(file);
+			const filepath = _path.relative(worldpath, file);
+			console.log(filepath, content.length, content.toString("hex").length);
 			await app.httpRequest().post("/api/v0/file").send({
 				repopath,
-				filepath: _path.relative(worldpath, filepath),
+				filepath,
 				//content: content,
 				content: content.toString("hex"),
 			}).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
+			await app.httpRequest().get(`/api/v0/file/raw?filepath=${filepath}&repopath=${repopath}`).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body).catch(e => console.log("not fount:--------", filepath));
+			//console.log(file);
 		}
 
 		const archive = await app.httpRequest().get("/api/v0/file/archive").send({
 			repopath,
 			filepath: "test/file.txt",
 		}).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
-		fs.writeFileSync("archive.zip", archive);
+		//fs.writeFileSync("archive.zip", archive);
 
 		return ;
 	});
