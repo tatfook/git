@@ -31,7 +31,7 @@ describe("file", () => {
 
 		// 移除仓库
 		//fs.rmdirSync("repository/test.git", {recursive: true});
-		rmdir("data/git");
+		rmdir("data");
 
 		// 保存文件
 		const files = await Promise.all([

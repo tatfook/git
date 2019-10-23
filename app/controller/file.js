@@ -7,13 +7,13 @@ const Controller = require("../core/controller.js");
 
 class File extends Controller {
 
-	get gitStore() {
-		return this.app.gitStore;
+	get git() {
+		return this.ctx.service.git;
 	}
 
 	parseParams(rule = {}) {
-		//const uid = "";
-		const {uid} = this.authenticated();
+		const uid = "";
+		//const {uid} = this.authenticated();
 
 		const params = this.validate({...rule, repopath: "string", filepath:"string"});
 
@@ -30,7 +30,7 @@ class File extends Controller {
 			commitId: "string_optional",
 		});
 
-		const file = await this.gitStore.getFile(params).catch(e => undefined);
+		const file = await this.git.getFile(params).catch(e => undefined);
 		if (!file) return this.fail("Not Found", 404);
 
 		file.content = file.content.toString("base64");
@@ -46,7 +46,7 @@ class File extends Controller {
 		});
 
 		const filename = _path.basename(params.filepath);
-		const file = await this.gitStore.getFile(params).catch(e => undefined);
+		const file = await this.git.getFile(params).catch(e => undefined);
 		if (!file) return this.fail("Not Found", 404);
 		this.ctx.set("Cache-Control", "public, max-age=86400");
 		const mimeType = mime.getType(filename);
@@ -63,6 +63,31 @@ class File extends Controller {
 		return this.success(file.binary ? file.content : file.content.toString());
 	}
 
+	async upload() {
+		const params = this.parseParams({
+			repopath: "string",
+			content: "string",
+			encoding: "string_optional",
+		});
+
+		const data = await this.git.upload(params);
+
+		return this.success(data);
+	}
+
+	async commit() {
+		const params = this.parseParams({
+			repopath: "string",
+			ref: "string_optional",
+			committer: "string_optional",
+			message: "string_optional",
+		});
+
+		const data = await this.git.commit(params);
+
+		return this.success(data);
+	}
+
 	async save() {
 		const params = this.parseParams({
 			repopath: "string",
@@ -72,7 +97,7 @@ class File extends Controller {
 			message: "string_optional",
 		});
 
-		const data = await this.gitStore.saveFile(params);
+		const data = await this.git.saveFile(params);
 
 		return this.success(data);
 	}
@@ -85,7 +110,7 @@ class File extends Controller {
 			message: "string_optional",
 		});
 
-		const data = await this.gitStore.deleteFile(params);
+		const data = await this.git.deleteFile(params);
 
 		return this.success(data);
 	}
@@ -98,7 +123,7 @@ class File extends Controller {
 			maxCount: "number_optional",
 		});
 
-		const list = await this.gitStore.history(params)
+		const list = await this.git.history(params)
 
 		return this.success(list);
 	}
@@ -111,7 +136,7 @@ class File extends Controller {
 			ref: "string_optional",
 		});
 
-		const tree = await this.gitStore.getTree(args);
+		const tree = await this.git.getTree(args);
 
 		return this.success(tree);
 	}
@@ -123,7 +148,7 @@ class File extends Controller {
 			recursive: "boolean_optional",
 		});
 
-		const tree = await this.gitStore.getTreeById(args);
+		const tree = await this.git.getTreeById(args);
 
 		return this.success(tree);
 	}
@@ -134,7 +159,7 @@ class File extends Controller {
 			ref:"string_optional",
 		});
 		
-		const filepath = await this.gitStore.createArchive(params);
+		const filepath = await this.git.createArchive(params);
 		const filestream = _fs.createReadStream(filepath, {emitClose: true});
 
 		filestream.on("close", () => {
