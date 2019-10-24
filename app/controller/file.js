@@ -6,7 +6,6 @@ const Git = require("nodegit");
 const Controller = require("../core/controller.js");
 
 class File extends Controller {
-
 	get git() {
 		return this.ctx.service.git;
 	}
@@ -33,7 +32,7 @@ class File extends Controller {
 		const file = await this.git.getFile(params).catch(e => undefined);
 		if (!file) return this.fail("Not Found", 404);
 
-		file.content = file.content.toString("base64");
+		file.content = file.content.toString();
 
 		return this.success(file);
 	}

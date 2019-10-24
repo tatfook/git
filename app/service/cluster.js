@@ -49,7 +49,7 @@ class ClusterService extends Service {
 	}
 
 	getDefaultSlavesInfo() {
-		const slaves = this.config.GitServer.slaves || [];
+		const slaves = this.config.GitServer.cluster.slaves || [];
 		return slaves.map(o => {
 			return {
 				hostname: o.hostname,
@@ -63,43 +63,64 @@ class ClusterService extends Service {
 	async getSlave(repopath) {
 		const repostr = base64.encode(repopath);
 		// 上分布式锁 过期时间为 30 min
-		const lockResults = await this.redis.multi().
-			set(this.getRedisKey(`repo_lock_${repostr}`), this.hostname, "EX", 60 * 30, "NX").
-			get(this.getRedisKey(`repo_info_${repostr}`)).
-			get(this.getRedisKey(`slaves`)).
-			exec().catch(e => {
-				console.log(e);
-				throw new Error("redis transaction failed: getSlave");
-			}); 
+		let tryLockCount = 0;
+		let lockResults = null;
+		while(!lockResults && tryLockCount < 3) {
+			lockResults = await this.redis.multi().
+				set(this.getRedisKey(`repo_lock_${repostr}`), this.hostname, "EX", 60 * 30, "NX").
+				get(this.getRedisKey(`repo_info_${repostr}`)).
+				hgetall(this.getRedisKey(`slave_request_count`)).
+				exec().catch(e => {
+					console.log(e);
+					//throw new Error("redis transaction failed: getSlave");
+					return ;
+				}); 
+			tryLockCount++;
+			if (!lockResults) {
+				await this.ctx.helper.sleep(200);
+			}
+		}
+		if (!lockResults) {
+			throw new Error("仓库已被锁定, 请稍后重试");
+		}
 
+		this.ctx.logger.debug(`仓库上锁: repo_lock_${repostr}`);
 		const unlock = async () => this.redis.del(`repo_lock_${repostr}`);
-		const repoinfo = this.helper.fromJson(lockResults[1][1]) || {blacklist:[]};
-		const slaves = this.helper.fromJson(lockResults[2][1]) || this.getDefaultSlavesInfo();
+		const repoinfo = this.helper.fromJson(lockResults[1][1]) || await this.app.model.Repository.getByPath({repopath}) || {};
+		const slaveRequestCount = this.helper.fromJson(lockResults[2][1]) || {};
+		const slaves = this.getDefaultSlavesInfo();
+		assert(slaves.length);
 
-		// slave 黑名单
-		repoinfo.blacklist = repoinfo.blacklist || [];
+		//console.log(lockResults);
+		//console.log(slaveRequestCount);
 
 		let slave = null;
-		//console.log(repoinfo);
-		//console.log(slaves);
-		if (repoinfo.fixedHostname) {  // 固定在某台主机
+		//this.ctx.logger.debug(repoinfo);
+		//this.ctx.logger.debug(slaves);
+		if (repoinfo.fixedHostname) {     // 固定在某台主机   主机未push
 			slave = _.find(slaves, o => o.hostname === repoinfo.fixedHostname);
-		} else if (repoinfo.hostname) { // 最后一次操作主机
-			slave = _.find(slaves, o => o.hostname === repoinfo.hostname);
-			// 若此主机请求太多, 可在其它随机
-		} else {  // 随机主机
-			//console.log(slaves.filter(o => repoinfo.blacklist.findIndex(hostname => hostname == o.hostname) !== 0))
-			slave = _.minBy(slaves.filter(o => repoinfo.blacklist.findIndex(hostname => hostname == o.hostname) !== 0), o => o.requestCount);
+			this.ctx.logger.debug(`仓库未推送, 选择未推送主机: hostname = ${slave.hostname}, requestCount = ${slave.requestCount}`);
+		} else if (repoinfo.cacheHostname) {   // 最后一次操作主机 主机push 仓库最新
+			slave = _.find(slaves, o => o.hostname === repoinfo.cacheHostname);
+			this.ctx.logger.debug(`仓库存在缓存, 选择缓存主机: hostname = ${slave.hostname}, requestCount = ${slave.requestCount}`);
+		} else {                          // 随机主机 无主机存在仓库
+			slave = _.minBy(slaves, o => slaveRequestCount[o.hostname] || 0);
+			this.ctx.logger.debug(`选择空闲主机: hostname = ${slave.hostname}, requestCount = ${slave.requestCount}`);
 		}
+
+		//this.ctx.logger.debug(slave);
 
 		if (!slave) {
 			await unlock();
+			await this.service.log.error("无法分配Slave主机", {repoinfo, slaves});
 			throw new Error("服务器错误, 仓库所在主机不存在");
 		}
 
+		const hostname = slave.hostname;
 		slave.requestCount++
-		repoinfo.hostname = slave.hostname;
-		repoinfo.fixedHostname = slave.hostname;
+		slave.pushed = repoinfo.fixedHostname ? false : true;
+		repoinfo.cacheHostname = hostname;
+		repoinfo.fixedHostname = hostname;
 
 		//console.log(slave);
 
@@ -107,41 +128,56 @@ class ClusterService extends Service {
 		await this.redis.multi().
 			del(this.getRedisKey(`repo_lock_${repostr}`)).
 			set(this.getRedisKey(`repo_info_${repostr}`), this.helper.toJson(repoinfo)).
-			set(this.getRedisKey(`slaves`), this.helper.toJson(slaves)).
+			hincrby(this.getRedisKey("slave_request_count"), slave.hostname, 1).
 			exec().catch(e => {
 				console.log(e);
+				this.ctx.logger.error(e);
+				this.service.log.error("仓库解锁失败", {repoinfo, slaves});
 				throw new Error("redis transaction unlock failed");
 			});
 		
+		this.ctx.logger.debug(`仓库解锁: repo_lock_${repostr}`);
 		return slave;
 	}
 
 	// 释放 slave
 	async freeSlave({repopath, hostname}) {
+		// 数据库解绑  清除unpush标记, 保留cache标记
+		await this.app.model.Repository.upsert({repopath, fixedHostname: null});
+
+		// redis 释放
+		const fullpath = this.gitStore.getRepoFullPath(repopath);
 		const repostr = base64.encode(repopath);
 		const lockResults = await this.redis.multi().
 			set(this.getRedisKey(`repo_lock_${repostr}`), this.hostname, "EX", 60 * 30, "NX").
 			get(this.getRedisKey(`repo_info_${repostr}`)).
-			get(this.getRedisKey(`slaves`)).
+			hget(this.getRedisKey('slave_request_count'), hostname).
 			exec().catch(e => {
 				console.log(e);
 				throw new Error("redis transaction failed: getSlave");
 			}); 
 
-		const repoinfo = this.helper.fromJson(lockResults[1][1]) || {};
-		const slaves = this.helper.fromJson(lockResults[2][1]) || [];
-		const slave = _.find(slaves, o => o.hostname === hostname);
+		const repoinfo = this.helper.fromJson(lockResults[1][1]) || await this.app.model.Repository.getByPath({repopath}) || {};
+		const requestCount = _.toNumber(lockResults[2][1]) || 0;
 
 		//repoinfo.hostname = repoinfo.fixedHostname = undefined;
-		if (repoinfo.hostname === hostname) repoinfo.hostname = undefined; // 理论上一定相同
 		if (repoinfo.fixedHostname == hostname) repoinfo.fixedHostname = undefined;
-		if (slave) slave.requestCount--;;
+
+		const clusterMaxRequestCount = this.config.GitServer.cluster.maxRequestCount || 1000;
+		if (requestCount > clusterMaxRequestCount){
+			assert(fullpath.split(_path.sep).length > 2); // 避免误删
+			this.ctx.helper.rm(fullpath);  // 移除项目
+			if (repoinfo.cacheHostname === hostname) {
+				await this.app.model.Repository.upsert({repopath, cacheHostname: null, fixedHostname: null});
+				repoinfo.cacheHostname = undefined; // 理论上一定相同
+			} 
+		} 
 
 		// 解除分布式锁 
 		await this.redis.multi().
 			del(this.getRedisKey(`repo_lock_${repostr}`)).
 			set(this.getRedisKey(`repo_info_${repostr}`), this.helper.toJson(repoinfo)).
-			set(this.getRedisKey(`slaves`), this.helper.toJson(slaves)).
+			hincrby(this.getRedisKey("slave_request_count"), hostname, -1).
 			exec().catch(e => {
 				console.log(e);
 				throw new Error("redis transaction unlock failed");
@@ -162,11 +198,13 @@ class ClusterService extends Service {
 		// 不存在clone
 		return await new Promise((resolve, reject) => {
 			const cmdstr = `git clone --depth=1 --bare --no-single-branch ${url} ${fullpath}`;
-			console.log("exec:", cmdstr);
+			this.ctx.logger.info("cwd:", fullpath);
+			this.ctx.logger.info("exec:", cmdstr);
 			child_process.exec(cmdstr, {
 			}, (error, stdout, stderr) => {
-				console.log({error, stdout, stderr});
+				this.ctx.logger.info({error, stdout, stderr});
 				if (error) {
+					this.ctx.logger.warn(`命令执行失败: ${cmdstr},  stdout:${stdout}, stderr: ${stderr}`);
 					return resolve(false);
 				}
 				return resolve(true);
@@ -186,12 +224,14 @@ class ClusterService extends Service {
 		// 不存在clone
 		return await new Promise((resolve, reject) => {
 			const cmdstr = `git pull origin ${ref}`;
-			console.log("exec:", cmdstr);
+			this.ctx.logger.info("cwd:", fullpath);
+			this.ctx.logger.info("exec:", cmdstr);
 			child_process.exec(cmdstr, {
 				cwd: fullpath,
 			}, (error, stdout, stderr) => {
-				console.log({error, stdout, stderr});
+				//console.log({error, stdout, stderr});
 				if (error) {
+					this.ctx.logger.warn(`命令执行失败: ${cmdstr},  stdout:${stdout}, stderr: ${stderr}`);
 					return resolve(false);
 				}
 				return resolve(true);
@@ -207,16 +247,21 @@ class ClusterService extends Service {
 
 		ref = this.gitStore.formatRef({ref});
 
+		//await this.ctx.helper.sleep(_.random(1000, 3000));
+
 		const ok = await new Promise((resolve, reject) => {
 			const _push = () => {
 				const cmdstr = `git push origin ${ref}`;
-				console.log("exec:", cmdstr);
+				this.ctx.logger.info("cwd:", fullpath);
+				this.ctx.logger.info("exec:", cmdstr);
 				child_process.exec(cmdstr, {
 					cwd: fullpath,
 				}, (error, stdout, stderr) => {
-					console.log({error, stdout, stderr});
+					//console.log({error, stdout, stderr});
 					if (error) {
 						tryCount++;
+
+						this.ctx.logger.warn(`命令执行失败: ${cmdstr},  stdout:${stdout}, stderr: ${stderr}`);
 
 						// 失败次数超过3次 放弃推送
 						if (tryCount > 3) {
@@ -224,7 +269,7 @@ class ClusterService extends Service {
 							return resolve(false);
 						}
 
-						setTimeout(_push, 1000); // 可以等待长点时间 重试
+						setTimeout(_push, 0); // 可以等待长点时间 重试
 
 						return;
 					}
@@ -236,7 +281,11 @@ class ClusterService extends Service {
 		});
 
 		// 推送失败直接返回
-		if (!ok) return;
+		if (!ok) {
+			// TODO 错误日志
+			this.service.log.error("仓库推送失败", {fullpath, hostname});
+			return ; 
+		}
 
 		// 通知其他客户端拉取提交
 
@@ -244,24 +293,39 @@ class ClusterService extends Service {
 		await this.freeSlave({repopath, hostname});
 	}
 
-	async saveFile(data) {
+	async exec(action, data) {
+		const hostname = this.hostname;
 		const {repopath} = data;
 
+		const isCommit = action === "saveFile" || action === "deleteFile" || action === "commit";
+		const isWrite = action === "upload" || isCommit;
 		// slave host save file
 		if (this.isSlave) {
+			this.ctx.logger.info(`slave:${action}`);
 			// clone repo 
 			const ok = await this.clone({repopath});
-			if (!ok) throw new Error("pull git repository failed");
+			if (!ok){
+				throw new Error("pull git repository failed");
+			} 
+
+			if (isWrite) { // 写操作 锁定主机
+				await this.app.model.Repository.upsert({repopath, cacheHostname: hostname, fixedHostname: hostname});
+			}
 			
 			// save file
-			const result = await this.gitStore.saveFile(data);
+			const result = await this.gitStore[action](data);
 
 			// async push repo
-			await this.push({repopath}); // push 到远程库
+			if (isCommit) {
+				//await this.push({repopath}); // push 到远程库
+				this.push({repopath}); // push 到远程库
+			}
 
 			return result;
 		}
 		
+		this.ctx.logger.debug(`exec: ${action}`);
+
 		// 确保仓库的存在
 		await this.gitStore.openRepository({path: repopath});
 
@@ -269,9 +333,72 @@ class ClusterService extends Service {
 		const slave = await this.getSlave(repopath);
 		
 		// 测试环境直接写文件结束 正式环境发送至slave机
-		const result = this.config.env === "unittest" ? await this.gitStore.saveFile(data) : await this.axios.post(`${slave.baseUrl}/file`, data);
+		if (this.config.env === "unittest" && isWrite) {
+			return await this.gitStore[action](data);
+		}
 
-		return result;
+		const baseUrl = slave.baseUrl;
+		if (action === "saveFile") {
+			return await this.axios.post(`${baseUrl}/file`, data).then(res => res.data);
+		} else if (action === "deleteFile") {
+			return await this.axios.delete(`${baseUrl}/file`, data).then(res => res.data);
+		} else if (action === "upload") {
+			return await this.axios.post(`${baseUrl}/file/upload`, data).then(res => res.data);
+		} else if (action === "commit") {
+			return await this.axios.post(`${baseUrl}/file/commit`, data).then(res => res.data);
+		} else {
+			// 读取数据
+			
+			// 存未推送数据, 先进行推送
+			if (!slave.pushed) {
+				if (this.config.env === "unittest") {
+					//await this.push(data);
+				} else {
+					await this.axios.post(`${baseUrl}/cluster/push`, data);
+				}
+			}
+
+			// 本地读取相关数据
+			return await this.gitStore[action](data);
+		}
+
+		return;
+	}
+
+	async saveFile(data) {
+		return await this.exec("saveFile", data);
+	}
+
+	async deleteFile(data) {
+		return await this.exec("deleteFile", data);
+	}
+
+	async getFile(data) {
+		return await this.exec("getFile", data);
+	}
+
+	async upload(data) {
+		return await this.exec("upload", data);
+	}
+
+	async commit(data) {
+		return await this.exec("commit", data);
+	}
+
+	async history(data) {
+		return await this.exec("history", data);
+	}
+
+	async getTreeById(data) {
+		return await this.exec("getTreeById", data);
+	}
+
+	async getTree(data) {
+		return await this.exec("getTree", data);
+	}
+
+	async createArchive(data) {
+		return await this.exec("createArchive", data);
 	}
 }
 

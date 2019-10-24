@@ -4,22 +4,27 @@ const _ =  require("lodash");
 const axios = require("axios");
 
 const run = async () => {
-	const baseUrl = "http://10.28.18.13:7001/api/v0/";
+	//const baseUrl = "http://10.28.18.13:7001/api/v0/";
+	const baseUrl = "http://127.0.0.1:7001/api/v0/";
 	const now = _.now();
 
 	let failed = 0, success = 0;
-	for (let i = 0; i < 100; i++) {
+	for (let i = 0; i < 1; i++) {
 		const promises = [];
 		const startTime = _.now();
 		for (let j = 0; j < 50; j++) { 
-			const repo = `repo${j}`;
+			const repopath = `repo${j}`;
 			//const filename = _.fill(Array(_.random(1, 3)), _.random(1, 100)).join("/");
-			const filename = _.random(0, 10000000);
-			const path = `${repo}/${filename}`;
+			const filepath = "file_" +  _.random(0, 10000000);
 			//console.log("提交文件: ", path);
 
+			//await new Promise((resolve, reject) => {
+				//setTimeout(() => resolve(true), _.random(100, 1000));
+			//});
+
 			promises.push(axios.post(`${baseUrl}file`, {
-				path,
+				repopath,
+				filepath,
 				content:"hello world",
 				committer:"xiaoyao",
 				message:"message",

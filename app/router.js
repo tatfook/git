@@ -29,4 +29,5 @@ module.exports = app => {
 	// 集群
 	const cluster = controller.cluster;
 	router.post(`${prefix}/cluster/pull`, cluster.pull);
+	router.post(`${prefix}/cluster/push`, cluster.push);
 }

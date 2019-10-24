@@ -13,6 +13,18 @@ class Cluster extends Controller {
 
 		this.success(ok);
 	}
+
+
+	async push() {
+		const params = this.validate({
+			repopath:"string",
+			ref: "string_optional",
+		});
+
+		const ok = await this.ctx.service.cluster.push(params);
+
+		return this.success(ok);
+	}
 }
 
 module.exports = Cluster;
