@@ -32,7 +32,7 @@ class File extends Controller {
 		const file = await this.git.getFile(params).catch(e => undefined);
 		if (!file) return this.fail("Not Found", 404);
 
-		file.content = file.content.toString();
+		file.content = file.content.toString("base64");
 
 		return this.success(file);
 	}
