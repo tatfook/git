@@ -63,9 +63,9 @@ class ClusterService extends Service {
 	async getSlave(repopath) {
 		const repostr = base64.encode(repopath);
 		const no = _.toNumber(repopath);
-		const slaves = this.getDefaultSlavesInfo();
-		if (no < 500) return slaves[0];
-		else return slaves[1];
+		const slavess = this.getDefaultSlavesInfo();
+		if (no < 500) return slavess[0];
+		else return slavess[1];
 		// 上分布式锁 过期时间为 30 min
 		let tryLockCount = 0;
 		let lockResults = null;

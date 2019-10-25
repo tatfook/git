@@ -14,7 +14,7 @@ class File extends Controller {
 		const uid = "";
 		//const {uid} = this.authenticated();
 
-		const params = this.validate({...rule, repopath: "string", filepath:"string"});
+		const params = this.validate({...rule, repopath: "string"});
 
 		params.repopath = _path.join(`${uid}`, params.repopath);
 		params.ref = params.ref || "master";
