@@ -56,12 +56,12 @@ const run = async (url) => {
 const main = async() => {
 	//console.log('mysql test:');
 	//await run("http://10.28.18.24:7000/file");
-	console.log('redis test:');
-	await run("http://10.28.18.24:7000/redis");
-	//console.log("cluster test:");
-	//await run("http://10.28.18.24:7001/api/v0/file");
-	//console.log("single test:");
-	//await run("http://10.28.18.24:7000/api/v0/file");
+	//console.log('redis test:');
+	//await run("http://10.28.18.24:7000/redis");
+	console.log("cluster test:");
+	await run("http://10.28.18.24:7001/api/v0/file");
+	console.log("single test:");
+	await run("http://10.28.18.24:7000/api/v0/file");
 }
 
 main();
