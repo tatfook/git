@@ -62,6 +62,10 @@ class ClusterService extends Service {
 	// 获取 slave
 	async getSlave(repopath) {
 		const repostr = base64.encode(repopath);
+		const no = _.toNumber(repopath);
+		const slaves = this.getDefaultSlavesInfo();
+		if (no < 500) return slaves[0];
+		else return slaves[1];
 		// 上分布式锁 过期时间为 30 min
 		let tryLockCount = 0;
 		let lockResults = null;
@@ -165,11 +169,11 @@ class ClusterService extends Service {
 
 		const clusterMaxRequestCount = this.config.GitServer.cluster.maxRequestCount || 1000;
 		if (requestCount > clusterMaxRequestCount){
-			assert(fullpath.split(_path.sep).length > 2); // 避免误删
-			this.ctx.helper.rm(fullpath);  // 移除项目
+			assert(fullpath.split(_path.sep).length > 2);                    // 避免误删
+			this.ctx.helper.rm(fullpath);                                    // 移除项目
 			if (repoinfo.cacheHostname === hostname) {
 				await this.app.model.Repository.upsert({repopath, cacheHostname: null, fixedHostname: null});
-				repoinfo.cacheHostname = undefined; // 理论上一定相同
+				repoinfo.cacheHostname = undefined;                          // 理论上一定相同
 			} 
 		} 
 
@@ -309,7 +313,7 @@ class ClusterService extends Service {
 			} 
 
 			if (isWrite) { // 写操作 锁定主机
-				await this.app.model.Repository.upsert({repopath, cacheHostname: hostname, fixedHostname: hostname});
+				//await this.app.model.Repository.upsert({repopath, cacheHostname: hostname, fixedHostname: hostname});
 			}
 			
 			// save file
@@ -318,7 +322,7 @@ class ClusterService extends Service {
 			// async push repo
 			if (isCommit) {
 				//await this.push({repopath}); // push 到远程库
-				this.push({repopath}); // push 到远程库
+				//this.push({repopath}); // push 到远程库
 			}
 
 			return result;

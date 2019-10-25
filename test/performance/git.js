@@ -11,7 +11,7 @@ const run = async (url) => {
 		const promises = [];
 		const startTime = _.now();
 		for (let j = 0; j < 1000; j++) { 
-			const repopath = `repo${j}`;
+			const repopath = `${j}`;
 			//const filename = _.fill(Array(_.random(1, 3)), _.random(1, 100)).join("/");
 			const filepath = "file_" +  _.random(0, 10000000);
 			//console.log("提交文件: ", path);
@@ -54,10 +54,10 @@ const run = async (url) => {
 	//const baseUrl = "http://127.0.0.1:7001/api/v0/";
 //
 const main = async() => {
-	console.log('mysql test:');
-	await run("http://127.0.0.1:7001/file");
+	//console.log('mysql test:');
+	//await run("http://10.28.18.24:7000/file");
 	console.log('redis test:');
-	await run("http://127.0.0.1:7001/redis");
+	await run("http://10.28.18.24:7000/redis");
 	//console.log("cluster test:");
 	//await run("http://10.28.18.24:7001/api/v0/file");
 	//console.log("single test:");
