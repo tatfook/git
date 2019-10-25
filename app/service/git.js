@@ -4,7 +4,6 @@ const _path = require("path");
 const _fs = require("fs");
 const _ = require("lodash");
 const Service = require('egg').Service;
-const Git = require("nodegit");
 const axios = require("axios");
 const base64 = require('js-base64').Base64;
 

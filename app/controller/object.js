@@ -1,5 +1,4 @@
 const _path = require("path");
-const Git = require("nodegit");
 
 const Controller = require("../core/controller.js");
 

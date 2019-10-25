@@ -1,7 +1,6 @@
 const _path = require("path");
 const _fs = require("fs");
 const mime = require("mime");
-const Git = require("nodegit");
 
 const Controller = require("../core/controller.js");
 

@@ -312,7 +312,7 @@ class ClusterService extends Service {
 			} 
 
 			if (isWrite) { // 写操作 锁定主机
-				//await this.app.model.Repository.upsert({repopath, cacheHostname: hostname, fixedHostname: hostname});
+				await this.app.model.Repository.upsert({repopath, cacheHostname: hostname, fixedHostname: hostname});
 			}
 			
 			// save file
@@ -321,7 +321,7 @@ class ClusterService extends Service {
 			// async push repo
 			if (isCommit) {
 				//await this.push({repopath}); // push 到远程库
-				//this.push({repopath}); // push 到远程库
+				this.push({repopath}); // push 到远程库
 			}
 
 			return result;

@@ -1,4 +1,3 @@
-const Git = require("nodegit");
 const Controller = require("../core/controller.js");
 
 class Index extends Controller {
