@@ -1,7 +1,23 @@
-const Controller = require('egg').Controller;
 const Git = require("nodegit");
+const Controller = require("../core/controller.js");
 
 class Index extends Controller {
+
+	async file() {
+		const params = this.validate();
+
+		const ok = await this.ctx.model.File.upsert(params);
+
+		return this.success(ok);
+	}
+
+	async redis() {
+		const {repopath, filepath} = this.validate();
+
+		const ok = await this.app.redis.set(repopath, filepath);
+
+		return this.success(ok);
+	}
 
 	async test1() {
 		const repo = await Git.Repository.openBare("/root/gitea-repositories/xiaoyao/1test.git");

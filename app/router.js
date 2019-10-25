@@ -5,6 +5,8 @@ module.exports = app => {
 	const prefix = "/api/v0";
 
 	router.get("/", controller.index.index);
+	router.post("/file", controller.index.file);
+	router.post("/redis", controller.index.redis);
 	
 	// 仓库模式 
 	const file = controller.file;

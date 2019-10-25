@@ -3,16 +3,14 @@ const _path = require("path");
 const _ =  require("lodash");
 const axios = require("axios");
 
-const run = async () => {
-	//const baseUrl = "http://10.28.18.13:7001/api/v0/";
-	const baseUrl = "http://127.0.0.1:7001/api/v0/";
+const run = async (url) => {
 	const now = _.now();
 
 	let failed = 0, success = 0;
-	for (let i = 0; i < 1; i++) {
+	for (let i = 0; i < 10; i++) {
 		const promises = [];
 		const startTime = _.now();
-		for (let j = 0; j < 50; j++) { 
+		for (let j = 0; j < 1000; j++) { 
 			const repopath = `repo${j}`;
 			//const filename = _.fill(Array(_.random(1, 3)), _.random(1, 100)).join("/");
 			const filepath = "file_" +  _.random(0, 10000000);
@@ -22,7 +20,7 @@ const run = async () => {
 				//setTimeout(() => resolve(true), _.random(100, 1000));
 			//});
 
-			promises.push(axios.post(`${baseUrl}file`, {
+			promises.push(axios.post(url, {
 				repopath,
 				filepath,
 				content:"hello world",
@@ -53,4 +51,18 @@ const run = async () => {
 	console.log(`耗时: ${time} ms, 成功: ${success}, 失败: ${failed} 次`);
 }
 
-run();
+	//const baseUrl = "http://127.0.0.1:7001/api/v0/";
+//
+const main = async() => {
+	console.log('mysql test:');
+	await run("http://127.0.0.1:7001/file");
+	console.log('redis test:');
+	await run("http://127.0.0.1:7001/redis");
+	//console.log("cluster test:");
+	//await run("http://10.28.18.24:7001/api/v0/file");
+	//console.log("single test:");
+	//await run("http://10.28.18.24:7000/api/v0/file");
+}
+
+main();
+
