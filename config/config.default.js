@@ -1,19 +1,19 @@
 
-exports.keys = "git";
+exports.keys = 'git';
 
 exports.security = {
-	xframe: {
-		enable: false,
-	},
-	csrf: {
-		enable: false,
-	},
-}
+    xframe: {
+        enable: false,
+    },
+    csrf: {
+        enable: false,
+    },
+};
 
 exports.bodyParser = {
-	jsonLimit: "10mb",
-	formLimit: "10mb",
-}
+    jsonLimit: '10mb',
+    formLimit: '10mb',
+};
 
-exports.middleware = ['authenticated'];
+exports.middleware = [ 'authenticated' ];
 

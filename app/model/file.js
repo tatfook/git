@@ -1,59 +1,56 @@
 
-const _ = require("lodash");
+const _ = require('lodash');
 
 module.exports = app => {
-	const {
-		BIGINT,
-		INTEGER,
-		STRING,
-		TEXT,
-		BOOLEAN,
-		JSON,
-		DECIMAL,
-	} = app.Sequelize;
+    const {
+        BIGINT,
+        INTEGER,
+        STRING,
+        TEXT,
+        BOOLEAN,
+        JSON,
+        DECIMAL,
+    } = app.Sequelize;
 
-	const model = app.model.define("file", {
-		id: {
-			type: BIGINT,
-			autoIncrement: true,
-			primaryKey: true,
-		},
-		
-		repopath: {
-			type: STRING(128),
-		},
+    const model = app.model.define('file', {
+        id: {
+            type: BIGINT,
+            autoIncrement: true,
+            primaryKey: true,
+        },
 
-		filepath: {
-			type: STRING(256),
-		},
+        repopath: {
+            type: STRING(128),
+        },
 
-		content: {
-			type: TEXT,
-		},
+        filepath: {
+            type: STRING(256),
+        },
 
-		ref: {
-			type: STRING,
-		},
+        content: {
+            type: TEXT,
+        },
 
-	}, {
-		charset: "utf8mb4",
-		collate: 'utf8mb4_bin',
+        ref: {
+            type: STRING,
+        },
 
-		indexes: [
-			{
-				unique: true,
-				fields: ["repopath", "filepath"],
-			}
-		]
-	});
+    }, {
+        charset: 'utf8mb4',
+        collate: 'utf8mb4_bin',
 
-	//model.sync({force:true}).then(() => {
-		//console.log("create table successfully");
-	//});
+        indexes: [
+            {
+                unique: true,
+                fields: [ 'repopath', 'filepath' ],
+            },
+        ],
+    });
 
-	return model;
+    // model.sync({force:true}).then(() => {
+    // console.log("create table successfully");
+    // });
+
+    return model;
 };
-
-
-
 

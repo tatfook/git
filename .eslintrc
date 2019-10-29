@@ -1,0 +1,29 @@
+{
+    "extends": "eslint-config-egg",
+    "rules": {
+        "indent": ["error", 4],
+        "max-len": ["error", { "code": 160 }], // 单行的最大长度
+        "no-bitwise": "off",
+        "no-magic-numbers": [
+            "error",
+            {
+                "ignore": [0, 1, -1, 200, 400, 401, 403, 404, 411, 500],
+                "ignoreArrayIndexes": true,
+                "enforceConst": true,
+                "detectObjects": false
+            }
+        ],
+        "no-console": "error",
+        "one-var-declaration-per-line": "error", // 一行声明一个变量
+        "no-empty": "off",
+        "no-empty-function": "off"
+    },
+    "overrides": [
+        {
+            "files": ["test/*/*.js"],
+            "rules": {
+                "no-magic-numbers": "off"
+            }
+        }
+    ]
+}

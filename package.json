@@ -16,6 +16,7 @@
     "start-slave1": "NODE_NAME=slave1 egg-bin dev",
     "start-slave2": "NODE_NAME=slave2 egg-bin dev",
     "dev": "egg-bin dev",
+	"lint": "eslint . --fix",
     "test": "egg-bin test"
   },
   "author": "",
@@ -38,6 +39,8 @@
   },
   "devDependencies": {
     "egg-bin": "^4.13.0",
-    "egg-mock": "^3.23.2"
+    "egg-mock": "^3.23.2",
+    "eslint": "^6.6.0",
+    "eslint-config-egg": "^7.5.1"
   }
 }

@@ -1,177 +1,177 @@
-const _path = require("path");
-const _fs = require("fs");
-const mime = require("mime");
+const _path = require('path');
+const _fs = require('fs');
+const mime = require('mime');
 
-const Controller = require("../core/controller.js");
+const Controller = require('../core/controller.js');
 
 class File extends Controller {
-	get git() {
-		return this.ctx.service.git;
-	}
+    get git() {
+        return this.ctx.service.git;
+    }
 
-	parseParams(rule = {}) {
-		const uid = "";
-		//const {uid} = this.authenticated();
+    parseParams(rule = {}) {
+        const uid = '';
+        // const {uid} = this.authenticated();
 
-		const params = this.validate({...rule, repopath: "string"});
+        const params = this.validate({ ...rule, repopath: 'string' });
 
-		params.repopath = _path.join(`${uid}`, params.repopath);
-		params.ref = params.ref || "master";
-		
-		return params;
-	}
+        params.repopath = _path.join(`${uid}`, params.repopath);
+        params.ref = params.ref || 'master';
 
-	async show() {
-		const params = this.parseParams({
-			repopath: "string",
-			filepath: "string",
-			commitId: "string_optional",
-		});
+        return params;
+    }
 
-		const file = await this.git.getFile(params).catch(e => undefined);
-		if (!file) return this.fail("Not Found", 404);
+    async show() {
+        const params = this.parseParams({
+            repopath: 'string',
+            filepath: 'string',
+            commitId: 'string_optional',
+        });
 
-		file.content = file.content.toString("base64");
+        const file = await this.git.getFile(params).catch(e => undefined);
+        if (!file) return this.fail('Not Found', 404);
 
-		return this.success(file);
-	}
+        file.content = file.content.toString('base64');
 
-	async raw() {
-		const params = this.parseParams({
-			repopath: "string",
-			filepath: "string",
-			commitId: "string_optional",
-		});
+        return this.success(file);
+    }
 
-		const filename = _path.basename(params.filepath);
-		const file = await this.git.getFile(params).catch(e => undefined);
-		if (!file) return this.fail("Not Found", 404);
-		this.ctx.set("Cache-Control", "public, max-age=86400");
-		const mimeType = mime.getType(filename);
-		if (mimeType) {
-			this.ctx.set("Content-Type", mimeType);
-			if (mimeType.indexOf("text/") == 0) {
-			} else if(mimeType.indexOf('image/') == 0) {
-				this.ctx.set("Content-Disposition", `inline; filename=${filename}`);
-			} else {
-				this.ctx.set("Content-Disposition", `attachment; filename=${filename}`);
-			}
-		}
+    async raw() {
+        const params = this.parseParams({
+            repopath: 'string',
+            filepath: 'string',
+            commitId: 'string_optional',
+        });
 
-		return this.success(file.binary ? file.content : file.content.toString());
-	}
+        const filename = _path.basename(params.filepath);
+        const file = await this.git.getFile(params).catch(e => undefined);
+        if (!file) return this.fail('Not Found', 404);
+        this.ctx.set('Cache-Control', 'public, max-age=86400');
+        const mimeType = mime.getType(filename);
+        if (mimeType) {
+            this.ctx.set('Content-Type', mimeType);
+            if (mimeType.indexOf('text/') == 0) {
+            } else if (mimeType.indexOf('image/') == 0) {
+                this.ctx.set('Content-Disposition', `inline; filename=${filename}`);
+            } else {
+                this.ctx.set('Content-Disposition', `attachment; filename=${filename}`);
+            }
+        }
 
-	async upload() {
-		const params = this.parseParams({
-			repopath: "string",
-			content: "string",
-			encoding: "string_optional",
-		});
+        return this.success(file.binary ? file.content : file.content.toString());
+    }
 
-		const data = await this.git.upload(params);
+    async upload() {
+        const params = this.parseParams({
+            repopath: 'string',
+            content: 'string',
+            encoding: 'string_optional',
+        });
 
-		return this.success(data);
-	}
+        const data = await this.git.upload(params);
 
-	async commit() {
-		const params = this.parseParams({
-			repopath: "string",
-			ref: "string_optional",
-			committer: "string_optional",
-			message: "string_optional",
-		});
+        return this.success(data);
+    }
 
-		const data = await this.git.commit(params);
+    async commit() {
+        const params = this.parseParams({
+            repopath: 'string',
+            ref: 'string_optional',
+            committer: 'string_optional',
+            message: 'string_optional',
+        });
 
-		return this.success(data);
-	}
+        const data = await this.git.commit(params);
 
-	async save() {
-		const params = this.parseParams({
-			repopath: "string",
-			filepath: "string",
-			content: "string_optional",
-			committer: "string_optional",
-			message: "string_optional",
-		});
+        return this.success(data);
+    }
 
-		const data = await this.git.saveFile(params);
+    async save() {
+        const params = this.parseParams({
+            repopath: 'string',
+            filepath: 'string',
+            content: 'string_optional',
+            committer: 'string_optional',
+            message: 'string_optional',
+        });
 
-		return this.success(data);
-	}
+        const data = await this.git.saveFile(params);
 
-	async destroy() {
-		const params = this.parseParams({
-			repopath: "string",
-			filepath: "string",
-			committer: "string_optional",
-			message: "string_optional",
-		});
+        return this.success(data);
+    }
 
-		const data = await this.git.deleteFile(params);
+    async destroy() {
+        const params = this.parseParams({
+            repopath: 'string',
+            filepath: 'string',
+            committer: 'string_optional',
+            message: 'string_optional',
+        });
 
-		return this.success(data);
-	}
+        const data = await this.git.deleteFile(params);
 
-	async history() {
-		const params = this.parseParams({
-			repopath: "string",
-			filepath: "string",
-			commitId: "string_optional",
-			maxCount: "number_optional",
-		});
+        return this.success(data);
+    }
 
-		const list = await this.git.history(params)
+    async history() {
+        const params = this.parseParams({
+            repopath: 'string',
+            filepath: 'string',
+            commitId: 'string_optional',
+            maxCount: 'number_optional',
+        });
 
-		return this.success(list);
-	}
+        const list = await this.git.history(params);
 
-	async getTreeByPath() {
-		const params = this.parseParams({
-			repopath: "string",
-			filepath: "string",
-			recursive: "boolean_optional",
-			ref: "string_optional",
-		});
+        return this.success(list);
+    }
 
-		const tree = await this.git.getTree(args);
+    async getTreeByPath() {
+        const params = this.parseParams({
+            repopath: 'string',
+            filepath: 'string',
+            recursive: 'boolean_optional',
+            ref: 'string_optional',
+        });
 
-		return this.success(tree);
-	}
+        const tree = await this.git.getTree(args);
 
-	async getTreeById() {
-		const params = this.parseParams({
-			repopath: "string",
-			id: "string",
-			recursive: "boolean_optional",
-		});
+        return this.success(tree);
+    }
 
-		const tree = await this.git.getTreeById(args);
+    async getTreeById() {
+        const params = this.parseParams({
+            repopath: 'string',
+            id: 'string',
+            recursive: 'boolean_optional',
+        });
 
-		return this.success(tree);
-	}
+        const tree = await this.git.getTreeById(args);
 
-	async getArchive() {
-		const params = this.parseParams({
-			repopath: "string",
-			ref:"string_optional",
-		});
-		
-		const filepath = await this.git.createArchive(params);
-		const filestream = _fs.createReadStream(filepath, {emitClose: true});
+        return this.success(tree);
+    }
 
-		filestream.on("close", () => {
-			_fs.unlinkSync(filepath);
-		});
+    async getArchive() {
+        const params = this.parseParams({
+            repopath: 'string',
+            ref: 'string_optional',
+        });
 
-		this.ctx.set("Content-Description", "File Transfer");
-		this.ctx.set("Content-Type", "application/octet-stream");
-		this.ctx.set("Content-Transfer-Encoding", "binary");
-		this.ctx.set("Expires", "0");
-		this.ctx.set("Cache-Control", "must-revalidate");
-		this.ctx.set("Pragma", "public");
-		this.ctx.body = filestream;
-	}
+        const filepath = await this.git.createArchive(params);
+        const filestream = _fs.createReadStream(filepath, { emitClose: true });
+
+        filestream.on('close', () => {
+            _fs.unlinkSync(filepath);
+        });
+
+        this.ctx.set('Content-Description', 'File Transfer');
+        this.ctx.set('Content-Type', 'application/octet-stream');
+        this.ctx.set('Content-Transfer-Encoding', 'binary');
+        this.ctx.set('Expires', '0');
+        this.ctx.set('Cache-Control', 'must-revalidate');
+        this.ctx.set('Pragma', 'public');
+        this.ctx.body = filestream;
+    }
 }
 
 module.exports = File;

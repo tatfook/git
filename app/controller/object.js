@@ -1,75 +1,75 @@
-const _path = require("path");
+const _path = require('path');
 
-const Controller = require("../core/controller.js");
+const Controller = require('../core/controller.js');
 
 class Object_ extends Controller {
 
-	get gitStore() {
-		return this.app.gitStore;
-	}
+    get gitStore() {
+        return this.app.gitStore;
+    }
 
-	parseParams(rule = {}) {
-		const {uid} = this.authenticated();
+    parseParams(rule = {}) {
+        const { uid } = this.authenticated();
 
-		const params = this.validate({...rule, path: "string"});
+        const params = this.validate({ ...rule, path: 'string' });
 
-		const path = _path.join(uid, params.path);
-		const obj = _path.parse(path);
-		params.repopath = obj.dir;
-		params.filepath = obj.base;
-		
-		return params;
-	}
+        const path = _path.join(uid, params.path);
+        const obj = _path.parse(path);
+        params.repopath = obj.dir;
+        params.filepath = obj.base;
 
-	async show() {
-		const params = this.parseParams({
-			commitId: "string_optional",
-		});
+        return params;
+    }
 
-		const file = await this.gitStore.getFile(params).catch(e => undefined);
-		if (!file) return this.fail("Not Found", 404);
+    async show() {
+        const params = this.parseParams({
+            commitId: 'string_optional',
+        });
 
-		file.rawcontent = undefined;
+        const file = await this.gitStore.getFile(params).catch(e => undefined);
+        if (!file) return this.fail('Not Found', 404);
 
-		return this.success(file);
-	}
+        file.rawcontent = undefined;
 
-	async save() {
-		const params = this.parseParams({
-			path: "string",
-			content: "string_optional",
-			committer: "string_optional",
-			message: "string_optional",
-		});
+        return this.success(file);
+    }
 
-		const data = await this.gitStore.saveFile(params);
+    async save() {
+        const params = this.parseParams({
+            path: 'string',
+            content: 'string_optional',
+            committer: 'string_optional',
+            message: 'string_optional',
+        });
 
-		return this.success(data);
-	}
+        const data = await this.gitStore.saveFile(params);
 
-	async destroy() {
-		const params = this.parseParams({
-			path: "string",
-			committer: "string_optional",
-			message: "string_optional",
-		});
+        return this.success(data);
+    }
 
-		const data = await this.gitStore.deleteFile(params);
+    async destroy() {
+        const params = this.parseParams({
+            path: 'string',
+            committer: 'string_optional',
+            message: 'string_optional',
+        });
 
-		return this.success(data);
-	}
+        const data = await this.gitStore.deleteFile(params);
 
-	async history() {
-		const params = this.parseParams({
-			path: "string",
-			commitId: "string_optional",
-			maxCount: "number_optional",
-		});
-		
-		const list = await this.gitStore.history(params)
+        return this.success(data);
+    }
 
-		return this.success(list);
-	}
+    async history() {
+        const params = this.parseParams({
+            path: 'string',
+            commitId: 'string_optional',
+            maxCount: 'number_optional',
+        });
+
+        const list = await this.gitStore.history(params);
+
+        return this.success(list);
+    }
 
 }
 
