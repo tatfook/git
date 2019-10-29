@@ -1,3 +1,5 @@
+'use strict';
+
 const fs = require('fs');
 const path = require('path');
 
@@ -28,7 +30,7 @@ module.exports = {
         try {
             return JSON.stringify(obj);
         } catch (e) {
-            console.log(e);
+            // console.log(e);
             throw e;
         }
     },
@@ -39,7 +41,7 @@ module.exports = {
         try {
             return JSON.parse(jsonStr);
         } catch (e) {
-            console.log(e);
+            // console.log(e);
         }
 
         return;
@@ -47,7 +49,7 @@ module.exports = {
 
     // wait function
     sleep: async (ms = 0) => {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             setTimeout(() => {
                 resolve(true);
             }, ms);

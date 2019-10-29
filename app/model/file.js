@@ -1,17 +1,20 @@
+'use strict';
 
-const _ = require('lodash');
+// const _ = require('lodash');
 
 module.exports = app => {
     const {
         BIGINT,
-        INTEGER,
+        // INTEGER,
         STRING,
         TEXT,
-        BOOLEAN,
-        JSON,
-        DECIMAL,
+        // BOOLEAN,
+        // JSON,
+        // DECIMAL,
     } = app.Sequelize;
 
+    const repopathLength = 128;
+    const filepathLength = 256;
     const model = app.model.define('file', {
         id: {
             type: BIGINT,
@@ -20,11 +23,11 @@ module.exports = app => {
         },
 
         repopath: {
-            type: STRING(128),
+            type: STRING(repopathLength),
         },
 
         filepath: {
-            type: STRING(256),
+            type: STRING(filepathLength),
         },
 
         content: {

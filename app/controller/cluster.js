@@ -1,3 +1,4 @@
+'use strict';
 
 const Controller = require('../core/controller.js');
 

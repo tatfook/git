@@ -1,15 +1,16 @@
+'use strict';
 
-const _ = require('lodash');
+// const _ = require('lodash');
 
 module.exports = app => {
     const {
         BIGINT,
         INTEGER,
-        STRING,
+        // STRING,
         TEXT,
-        BOOLEAN,
+        // BOOLEAN,
         JSON,
-        DECIMAL,
+        // DECIMAL,
     } = app.Sequelize;
 
     const model = app.model.define('log', {

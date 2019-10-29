@@ -1,5 +1,5 @@
+'use strict';
 
-const fs = require('fs');
 const path = require('path');
 const GitStore = require('git-history-store');
 // const GitStore = require("../git-store/index.js");

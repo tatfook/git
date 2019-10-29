@@ -1,3 +1,5 @@
+'use strict';
+
 const _path = require('path');
 
 const Controller = require('../core/controller.js');
@@ -26,7 +28,7 @@ class Object_ extends Controller {
             commitId: 'string_optional',
         });
 
-        const file = await this.gitStore.getFile(params).catch(e => undefined);
+        const file = await this.gitStore.getFile(params).catch(() => undefined);
         if (!file) return this.fail('Not Found', 404);
 
         file.rawcontent = undefined;

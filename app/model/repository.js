@@ -1,15 +1,16 @@
+'use strict';
 
-const _ = require('lodash');
+// const _ = require('lodash');
 
 module.exports = app => {
     const {
         BIGINT,
-        INTEGER,
+        // INTEGER,
         STRING,
-        TEXT,
-        BOOLEAN,
-        JSON,
-        DECIMAL,
+        // TEXT,
+        // BOOLEAN,
+        // JSON,
+        // DECIMAL,
     } = app.Sequelize;
 
     const model = app.model.define('repository', {

@@ -1,15 +1,6 @@
-const joi = require('joi');
-const _ = require('lodash');
-const Controller = require('egg').Controller;
+'use strict';
 
-const rules = {
-    number: joi.number().required(),
-    number_optional: joi.number(),
-    string: joi.string().required(),
-    string_optional: joi.string(),
-    boolean: joi.boolean().required(),
-    boolean_optional: joi.boolean(),
-};
+const Controller = require('egg').Controller;
 
 class BaseController extends Controller {
     get log() {

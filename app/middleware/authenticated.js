@@ -1,5 +1,6 @@
+'use strict';
 
-const jwt = require('jwt-simple');
+// const jwt = require('jwt-simple');
 
 function getCookieToken(ctx) {
     return ctx.cookies.get('token');
@@ -8,8 +9,9 @@ function getCookieToken(ctx) {
 function getAuthorizationHeaderToken(ctx) {
     const authorization = ctx.header.authorization || '';
     const parts = authorization.split(' ');
+    const partsLength = 2;
 
-    if (parts.length == 2) {
+    if (parts.length === partsLength) {
         if (/^Bearer$/i.test(parts[0])) return parts[1];
     }
 

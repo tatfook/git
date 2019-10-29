@@ -1,3 +1,5 @@
+'use strict';
+
 const _path = require('path');
 const _fs = require('fs');
 const mime = require('mime');
@@ -28,7 +30,7 @@ class File extends Controller {
             commitId: 'string_optional',
         });
 
-        const file = await this.git.getFile(params).catch(e => undefined);
+        const file = await this.git.getFile(params).catch(() => undefined);
         if (!file) return this.fail('Not Found', 404);
 
         file.content = file.content.toString('base64');
@@ -44,14 +46,14 @@ class File extends Controller {
         });
 
         const filename = _path.basename(params.filepath);
-        const file = await this.git.getFile(params).catch(e => undefined);
+        const file = await this.git.getFile(params).catch(() => undefined);
         if (!file) return this.fail('Not Found', 404);
         this.ctx.set('Cache-Control', 'public, max-age=86400');
         const mimeType = mime.getType(filename);
         if (mimeType) {
             this.ctx.set('Content-Type', mimeType);
-            if (mimeType.indexOf('text/') == 0) {
-            } else if (mimeType.indexOf('image/') == 0) {
+            if (mimeType.indexOf('text/') === 0) {
+            } else if (mimeType.indexOf('image/') === 0) {
                 this.ctx.set('Content-Disposition', `inline; filename=${filename}`);
             } else {
                 this.ctx.set('Content-Disposition', `attachment; filename=${filename}`);
@@ -134,7 +136,7 @@ class File extends Controller {
             ref: 'string_optional',
         });
 
-        const tree = await this.git.getTree(args);
+        const tree = await this.git.getTree(params);
 
         return this.success(tree);
     }
@@ -146,7 +148,7 @@ class File extends Controller {
             recursive: 'boolean_optional',
         });
 
-        const tree = await this.git.getTreeById(args);
+        const tree = await this.git.getTreeById(params);
 
         return this.success(tree);
     }

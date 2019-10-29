@@ -1,11 +1,12 @@
+'use strict';
 
-const child_process = require('child_process');
-const _path = require('path');
-const _fs = require('fs');
-const _ = require('lodash');
+// const child_process = require('child_process');
+// const _path = require('path');
+// const _fs = require('fs');
+// const _ = require('lodash');
 const Service = require('egg').Service;
-const axios = require('axios');
-const base64 = require('js-base64').Base64;
+// const axios = require('axios');
+// const base64 = require('js-base64').Base64;
 
 class GitService extends Service {
     get isCluster() {

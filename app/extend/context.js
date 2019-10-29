@@ -1,3 +1,5 @@
+'use strict';
+
 const joi = require('joi');
 const _ = require('lodash');
 
@@ -22,7 +24,7 @@ module.exports = {
         const result = joi.validate(params, schema, options);
 
         if (result.error) {
-            console.log(this.request.body);
+            // console.log(this.request.body);
             const errmsg = result.error.details[0].message.replace(/"/g, '');
             this.throw(400, 'invalid params:' + errmsg);
         }
