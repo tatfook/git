@@ -2,7 +2,7 @@
 
 const path = require('path');
 const GitStore = require('git-history-store');
-// const GitStore = require("../git-store/index.js");
+//const GitStore = require("../git-store/index.js");
 
 module.exports = app => {
     const config = app.config.GitServer;

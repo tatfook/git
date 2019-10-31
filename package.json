@@ -16,7 +16,7 @@
     "start-slave1": "NODE_NAME=slave1 egg-bin dev",
     "start-slave2": "NODE_NAME=slave2 egg-bin dev",
     "dev": "egg-bin dev",
-	"lint": "eslint . --fix",
+    "lint": "eslint . --fix",
     "test": "egg-bin test"
   },
   "author": "",
@@ -28,7 +28,7 @@
     "egg-redis": "^2.4.0",
     "egg-scripts": "^2.11.0",
     "egg-sequelize": "^5.2.0",
-    "git-history-store": "^1.0.8",
+    "git-history-store": "^1.0.9",
     "joi": "^14.3.1",
     "js-base64": "^2.5.1",
     "jwt-simple": "^0.5.6",

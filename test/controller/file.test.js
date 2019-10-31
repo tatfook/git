@@ -3,26 +3,7 @@ const { app, mock, assert  } = require('egg-mock/bootstrap');
 const fs = require("fs");
 const base64 = require('js-base64').Base64;
 
-function rmdir(path){
-    let files = [];
-    if (fs.existsSync(path)) {
-        files = fs.readdirSync(path);
-        files.forEach((file, index) => {
-            let curPath = path + "/" + file;
-            if(fs.statSync(curPath).isDirectory()){
-                rmdir(curPath); //递归删除文件夹
-            } else {
-                fs.unlinkSync(curPath); //删除文件
-            }
-        });
-        fs.rmdirSync(path);
-    }
-}
-
 describe("file", () => {
-	it("000 queue", async () => {
-	});
-
 	it("001 repository file", async () => {
 		const ctx = app.mockContext();
 		const token = "keepwork";
@@ -30,8 +11,7 @@ describe("file", () => {
 		const repopath = "test";
 
 		// 移除仓库
-		//fs.rmdirSync("repository/test.git", {recursive: true});
-		rmdir("data");
+		ctx.helper.rm("data/git");
 
 		// 保存文件
 		const files = await Promise.all([
@@ -89,5 +69,77 @@ describe("file", () => {
 		//console.log(file);
 		assert(base64.decode(file.content), "hello world");
 	});
+
+    it ("002 upload commit", async () => {
+		const ctx = app.mockContext();
+		const token = "keepwork";
+		const filepath = "test/file.txt";
+		const repopath = "test";
+
+        ctx.helper.rm("data/git");
+
+        const sha1 = await app.httpRequest().post("/api/v0/file/upload").send({
+            repopath,
+            encoding: "base64",
+            content: base64.encode("file1 hello world"),
+        }).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.text);
+        assert(sha1);
+
+        const sha2 = await app.httpRequest().post("/api/v0/file/upload").send({
+            repopath,
+            encoding: "base64",
+            content: base64.encode("file2 hello world"),
+        }).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.text);
+        assert(sha2);
+        
+        const sha3 = await app.httpRequest().post("/api/v0/file/upload").send({
+            repopath,
+            encoding: "base64",
+            content: base64.encode("file3 hello world"),
+        }).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.text);
+        assert(sha3);
+
+        let commitId = await app.httpRequest().post("/api/v0/file/commit").send({
+            repopath,
+            files: [
+                {
+                    path: "file1",
+                    id: sha1,
+                    action: "upsert",
+                },
+                {
+                    path: "file2",
+                    id: sha2,
+                    action: "upsert",
+                },
+                {
+                    path: "dir/file3",
+                    id: sha3,
+                    action: "upsert",
+                },
+            ]
+        }).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.text);
+        assert(commitId);
+
+        commitId = await app.httpRequest().post("/api/v0/file/commit").send({
+            repopath,
+            files: [
+                {
+                    path: "dir/file3",
+                    id: sha3,
+                    action: "remove",
+                },
+                {
+                    path: "test/file3",
+                    id: sha3,
+                    action: "upsert",
+                },
+            ]
+        }).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.text);
+        assert(commitId);
+		// 提交历史
+		const list = await app.httpRequest().get(`/api/v0/file/history?filepath=test/file3&repopath=${repopath}`).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
+        assert(list.length === 1);
+    });
 });
 
