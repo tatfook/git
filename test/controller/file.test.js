@@ -141,5 +141,61 @@ describe("file", () => {
 		const list = await app.httpRequest().get(`/api/v0/file/history?filepath=test/file3&repopath=${repopath}`).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
         assert(list.length === 1);
     });
+
+    it ("003 tree", async () => {
+		const ctx = app.mockContext();
+		const token = "keepwork";
+		const filepath = "test/file.txt";
+		const repopath = "test";
+
+        ctx.helper.rm("data/git");
+
+        const sha1 = await app.httpRequest().post("/api/v0/file/upload").send({
+            repopath,
+            encoding: "base64",
+            content: base64.encode("file1 hello world"),
+        }).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.text);
+        assert(sha1);
+
+        const sha2 = await app.httpRequest().post("/api/v0/file/upload").send({
+            repopath,
+            encoding: "base64",
+            content: base64.encode("file2 hello world"),
+        }).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.text);
+        assert(sha2);
+        
+        const sha3 = await app.httpRequest().post("/api/v0/file/upload").send({
+            repopath,
+            encoding: "base64",
+            content: base64.encode("file3 hello world"),
+        }).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.text);
+        assert(sha3);
+
+        let commitId = await app.httpRequest().post("/api/v0/file/commit").send({
+            repopath,
+            files: [
+                {
+                    path: "file1",
+                    id: sha1,
+                    action: "upsert",
+                },
+                {
+                    path: "file2",
+                    id: sha2,
+                    action: "upsert",
+                },
+                {
+                    path: "dir/file3",
+                    id: sha3,
+                    action: "upsert",
+                },
+            ]
+        }).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.text);
+        assert(commitId);
+        
+        let tree = await app.httpRequest().get(`/api/v0/file/tree?repopath=${repopath}`).expect(res => assert(res.statusCode === 200)).then(res => res.body);
+        assert(tree.length == 3)
+
+    });
 });
 

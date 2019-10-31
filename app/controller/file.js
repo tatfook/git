@@ -131,7 +131,6 @@ class File extends Controller {
     async getTreeByPath() {
         const params = this.parseParams({
             repopath: 'string',
-            filepath: 'string',
             recursive: 'boolean_optional',
             ref: 'string_optional',
         });
