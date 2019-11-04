@@ -1,4 +1,5 @@
 
+const _ = require("lodash");
 const { app, mock, assert  } = require('egg-mock/bootstrap');
 const fs = require("fs");
 const base64 = require('js-base64').Base64;
@@ -20,6 +21,9 @@ describe("file", () => {
 				filepath: "test/file.txt",
 				encoding: "base64",
 				content: base64.encode("hello world"),
+                committer: {
+                    name: "test",
+                }
 			}).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body),
 
 			await app.httpRequest().post("/api/v0/file").send({
@@ -193,9 +197,14 @@ describe("file", () => {
         }).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.text);
         assert(commitId);
         
-        let tree = await app.httpRequest().get(`/api/v0/file/tree?repopath=${repopath}`).expect(res => assert(res.statusCode === 200)).then(res => res.body);
-        assert(tree.length == 3)
+        let trees = await app.httpRequest().get(`/api/v0/file/tree?repopath=${repopath}`).expect(res => assert(res.statusCode === 200)).then(res => res.body);
+        assert(trees.length == 3)
 
+        const tree = _.find(trees, o => o.isTree);
+        assert(tree);
+        trees = await app.httpRequest().get(`/api/v0/file/tree/?repopath=${repopath}&filepath=dir/`).expect(res => assert(res.statusCode === 200)).then(res => res.body);
+        //console.log(trees);
+        assert(trees.length === 1);
     });
 });
 

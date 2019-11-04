@@ -79,11 +79,11 @@ class File extends Controller {
         const params = this.parseParams({
             repopath: 'string',
             ref: 'string_optional',
-            committer: 'string_optional',
             message: 'string_optional',
         });
 
         const data = await this.git.commit(params);
+        if (!data) return this.throw(500, "提交失败");
 
         return this.success(data);
     }
@@ -93,7 +93,6 @@ class File extends Controller {
             repopath: 'string',
             filepath: 'string',
             content: 'string_optional',
-            committer: 'string_optional',
             message: 'string_optional',
         });
 
@@ -106,7 +105,6 @@ class File extends Controller {
         const params = this.parseParams({
             repopath: 'string',
             filepath: 'string',
-            committer: 'string_optional',
             message: 'string_optional',
         });
 
@@ -140,17 +138,17 @@ class File extends Controller {
         return this.success(tree);
     }
 
-    async getTreeById() {
-        const params = this.parseParams({
-            repopath: 'string',
-            id: 'string',
-            recursive: 'boolean_optional',
-        });
+    //async getTreeById() {
+        //const params = this.parseParams({
+            //repopath: 'string',
+            //id: 'string',
+            //recursive: 'boolean_optional',
+        //});
 
-        const tree = await this.git.getTreeById(params);
+        //const tree = await this.git.getTreeById(params);
 
-        return this.success(tree);
-    }
+        //return this.success(tree);
+    //}
 
     async getArchive() {
         const params = this.parseParams({
