@@ -16,6 +16,8 @@ module.exports = app => {
     router.post(`${prefix}/repo/rename`, repo.rename);   // 仓库重命名
     router.delete(`${prefix}/repo`, repo.destroy);       // 仓库删除
 
+    router.post(`${prefix}/repo/sync`, repo.sync);       // 仓库同步
+
     // 仓库模式
     const file = controller.file;
     router.get(`${prefix}/file`, file.show);           // 获取文件

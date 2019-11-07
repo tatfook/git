@@ -26,3 +26,5 @@ config/config.rls.js
 config/config.unittest.js
 config/config.*.js
 archive.zip
+*.gz
+repositories/

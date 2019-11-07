@@ -37,5 +37,22 @@ describe("local", async () => {
 	it("base64", async () => {
         console.log(base64.encode('xiaoyao'));
         console.log(base64.encode('xiaoyao/world_base32_9dj76t36chgq6t3kchk68wvkcundefinedag.wiki.git'));
-	})
+	});
+
+    it ("dev gitlab", async () => {
+        const repopath = "xiaoyao/test1234.git";
+        const filepath = "xiaoyao/test1234/index.md";
+        const token = "keepwork";
+        const commits = await app.gitStore.history({
+            repopath:"xiaoyao/test1234.git",
+            filepath:"xiaoyao/test1234/index.md",
+            ref:"master",
+        });
+
+        console.log(commits);
+		const list = await app.httpRequest().get(`/api/v0/file/history?filepath=${filepath}&repopath=${repopath}`).set("Authorization", `Bearer ${token}`).expect(res => assert(res.statusCode == 200)).then(res => res.body);
+        console.log(list);
+		assert(list.length == 1);
+
+    });
 })
