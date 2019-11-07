@@ -9,6 +9,7 @@ module.exports = app => {
 
     const storePath = config.storePath;
 
-    app.gitStore = GitStore.create({ storePath, gitPath: path.join(storePath, 'git'), lockPath: path.join(storePath, 'gitLock') });
-    app.objectStore = GitStore.create({ storePath, gitPath: path.join(storePath, 'object'), lockPath: path.join(storePath, 'objectLock') });
+    //app.gitStore = GitStore;
+    app.gitStore = GitStore.create({storePath, gitPath: path.join(storePath, 'git'), lockPath: path.join(storePath, 'lock')});
+    //app.objectStore = GitStore.create({ storePath, gitPath: path.join(storePath, 'object'), lockPath: path.join(storePath, 'objectLock') });
 };

@@ -3,6 +3,7 @@
 const _path = require("path");
 const _ =  require("lodash");
 const axios = require("axios");
+const base64 = require("js-base64").Base64;
 
 const { app, mock, assert  } = require('egg-mock/bootstrap');
 
@@ -33,6 +34,8 @@ describe("local", async () => {
 		console.log(id);
 	});
 
-	it("gitea", async () => {
+	it("base64", async () => {
+        console.log(base64.encode('xiaoyao'));
+        console.log(base64.encode('xiaoyao/world_base32_9dj76t36chgq6t3kchk68wvkcundefinedag.wiki.git'));
 	})
 })
