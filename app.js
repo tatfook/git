@@ -6,10 +6,7 @@ const GitStore = require('git-history-store');
 
 module.exports = app => {
     const config = app.config.GitServer;
-
     const storePath = config.storePath;
 
-    //app.gitStore = GitStore;
-    app.gitStore = GitStore.create({storePath, gitPath: path.join(storePath, 'git'), lockPath: path.join(storePath, 'lock')});
-    //app.objectStore = GitStore.create({ storePath, gitPath: path.join(storePath, 'object'), lockPath: path.join(storePath, 'objectLock') });
+    app.gitStore = new GitStore({storePath, gitPath: path.join(storePath, 'git'), lockPath: path.join(storePath, 'lock')});
 };
