@@ -1,9 +1,13 @@
 #!/bin/bash
 
-ROOT_DIR=/root/workspace/js/git
+ROOT_DIR=/git-data
 OLD_REPO_DIR=${ROOT_DIR}/repositories
 NEW_REPO_DIR=${ROOT_DIR}/data/git
 USERNAME_PREFIX=gitlab_www_
+
+rm -fr ${NEW_REPO_DIR}/*
+rm -fr ${OLD_REPO_DIR}
+tar -zxvf repo.tar.gz 
 
 for username in `ls ${OLD_REPO_DIR}` 
 do
@@ -25,7 +29,7 @@ do
 
         echo mv ${old_repopath} ${new_repopath}
 
-        #mv ${old_repopath} ${new_repopath}
+        mv ${old_repopath} ${new_repopath}
         #echo ${realname}/${reponame}
         #echo ${new_reponame}
     done
