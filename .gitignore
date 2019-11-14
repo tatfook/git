@@ -20,6 +20,7 @@ newrelic_*
 yarn.lock
 
 data/
+config.js
 config/config.local.js
 config/config.prod.js
 config/config.rls.js

@@ -1,11 +1,15 @@
 'use strict';
 
+const config = require("./config.js");
+
 exports.redis = {
-    enable: false,
+    enable: config.cluster.enable,
     package: 'egg-redis',
 };
 
 exports.sequelize = {
-    enable: false,
+    enable: config.cluster.enable,
     package: 'egg-sequelize',
 };
+
+//console.log(exports.redis, exports.sequelize);
