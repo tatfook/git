@@ -2,6 +2,7 @@
 const _ = require("lodash");
 const { app, mock, assert  } = require('egg-mock/bootstrap');
 const fs = require("fs");
+const fsExtra = require("fs-extra");
 const base64 = require('js-base64').Base64;
 
 describe("file", () => {
@@ -12,7 +13,7 @@ describe("file", () => {
 		const repopath = "test";
 
 		// 移除仓库
-		ctx.helper.rm("data/git");
+		await fsExtra.remove("data/git");
 
 		// 保存文件
 		const files = await Promise.all([
@@ -80,7 +81,8 @@ describe("file", () => {
 		const filepath = "test/file.txt";
 		const repopath = "test";
 
-        ctx.helper.rm("data/git");
+		await fsExtra.remove("data/git");
+        //ctx.helper.rm("data/git");
 
         const sha1 = await app.httpRequest().post("/api/v0/file/upload").send({
             repopath,
@@ -152,7 +154,7 @@ describe("file", () => {
 		const filepath = "test/file.txt";
 		const repopath = "test";
 
-        ctx.helper.rm("data/git");
+		await fsExtra.remove("data/git");
 
         const sha1 = await app.httpRequest().post("/api/v0/file/upload").send({
             repopath,
