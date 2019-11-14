@@ -1,11 +1,11 @@
 'use strict';
 
 exports.redis = {
-    enable: true,
+    enable: false,
     package: 'egg-redis',
 };
 
 exports.sequelize = {
-    enable: true,
+    enable: false,
     package: 'egg-sequelize',
 };
