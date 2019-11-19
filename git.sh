@@ -22,7 +22,7 @@ do
     for reponame in `ls ${OLD_REPO_DIR}/${username}`
     do
         # continue .wiki.git 
-        if [ "${reponame:0-9:9}" = ".wiki.git" ]; then
+        if [ "${reponame:0-9:9}" = ".wiki.git"  -o "${reponame}" = "__keepwork__.git" ]; then
             echo "continue ${reponame}"
             continue;
         fi

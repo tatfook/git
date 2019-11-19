@@ -30,7 +30,7 @@ class Repo extends Controller {
 
         await this.git.rename(params);
 
-        return this.success();
+        return this.success(true);
     }
 
     async destroy() {
