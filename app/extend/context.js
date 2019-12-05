@@ -10,11 +10,14 @@ const rules = {
     string_optional: joi.string().empty(''),
     boolean: joi.boolean().required(),
     boolean_optional: joi.boolean(),
+    object: joi.object().required(),
+    object_optional: joi.object(),
 };
 
 module.exports = {
     validate(schema, data, options = { allowUnknown: true }) {
-        const params = data || _.merge({}, this.request.body, this.query, this.params);
+        const params =
+            data || _.merge({}, this.request.body, this.query, this.params);
         schema = schema || {};
 
         _.each(schema, (val, key) => {
@@ -24,7 +27,6 @@ module.exports = {
         const result = joi.validate(params, schema, options);
 
         if (result.error) {
-            // console.log(this.request.body);
             const errmsg = result.error.details[0].message.replace(/"/g, '');
             this.throw(400, 'invalid params:' + errmsg);
         }

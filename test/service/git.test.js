@@ -1,14 +1,13 @@
+const { app, mock, assert } = require('egg-mock/bootstrap');
+const fs = require('fs');
 
-const { app, mock, assert  } = require('egg-mock/bootstrap');
-const fs = require("fs");
-
-function rmdir(path){
+function rmdir(path) {
     let files = [];
     if (fs.existsSync(path)) {
         files = fs.readdirSync(path);
         files.forEach((file, index) => {
-            let curPath = path + "/" + file;
-            if(fs.statSync(curPath).isDirectory()){
+            let curPath = path + '/' + file;
+            if (fs.statSync(curPath).isDirectory()) {
                 rmdir(curPath); //递归删除文件夹
             } else {
                 fs.unlinkSync(curPath); //删除文件
@@ -18,98 +17,65 @@ function rmdir(path){
     }
 }
 
-describe("git", () => {
-	//it("001 repository file", async () => {
-		//const ctx = app.mockContext();
-		//const git = ctx.service.git;
+describe('git', () => {
+    it('001 repository file', async () => {
+        const ctx = app.mockContext();
+        const git = ctx.service.git;
 
-		//// 移除仓库
-		////fs.rmdirSync("repository/test.git", {recursive: true});
-		//rmdir("data/git/test.git");
+        // 移除仓库
+        //fs.rmdirSync("repository/test.git", {recursive: true});
+        rmdir('data/git/test.git');
 
-		//let commit = await git.saveFile({
-			//path: "test/file.txt",
-			//content: "hello world",
-		//});
-		//assert(commit);
+        let commit = await git.saveFile({
+            path: 'test/file.txt',
+            content: 'hello world',
+        });
+        assert(commit);
 
-		//commit = await git.saveFile({
-			//path: "test/file1.txt",
-			//content: "hello world",
-		//});
+        commit = await git.saveFile({
+            path: 'test/file1.txt',
+            content: 'hello world',
+        });
 
-		//commit = await git.saveFile({
-			//path: "test/dir/file.txt",
-			//content: "hello world",
-		//});
-		//assert(commit);
+        commit = await git.saveFile({
+            path: 'test/dir/file.txt',
+            content: 'hello world',
+        });
+        assert(commit);
 
-		//commit = await git.saveFile({
-			//path: "test/file.txt",
-			//content: "hello world 2",
-		//});
-		//assert(commit);
+        commit = await git.saveFile({
+            path: 'test/file.txt',
+            content: 'hello world 2',
+        });
+        assert(commit);
 
-		//// 移除文件
-		//commit = await git.deleteFile({path:"test/file.txt"});
-		//assert(commit);
-	//});
+        // 移除文件
+        commit = await git.deleteFile({ path: 'test/file.txt' });
+        assert(commit);
+    });
 
-	//it("002 history", async() => {
-		//const ctx = app.mockContext();
-		//const git = ctx.service.git;
-		//const path = "test/file.txt";
+    it('002 history', async () => {
+        const ctx = app.mockContext();
+        const git = ctx.service.git;
+        const path = 'test/file.txt';
 
-		//const list = await git.history({path: path});
-		////console.log(list);
-		//assert(list.length == 3);
+        const list = await git.history({ path: path });
+        //console.log(list);
+        assert(list.length == 3);
 
-		//let commitId = list[0].commitId;
-		//let text = await git.getFileContent({path, commitId})
-		////console.log("第一次提交内容: ", text);
-		//assert(text == "");
+        let commitId = list[0].commitId;
+        let text = await git.getFileContent({ path, commitId });
+        //console.log("第一次提交内容: ", text);
+        assert(text == '');
 
-		//commitId = list[1].commitId;
-		//text = await git.getFileContent({path, commitId})
-		////console.log("第二次提交内容: ", text);
-		//assert(text, "hello world");
+        commitId = list[1].commitId;
+        text = await git.getFileContent({ path, commitId });
+        //console.log("第二次提交内容: ", text);
+        assert(text, 'hello world');
 
-		//commitId = list[2].commitId;
-		//text = await  git.getFileContent({path, commitId})
-		////console.log("第三次提交内容: ", text);
-		//assert(text, "hello world 2");
-	//});
-	//
-	it ("cluster git", async () => {
-		const config = app.config.GitServer;
-		const ctx = app.mockContext();
-		const git = ctx.service.git;
-		const repopath = "test";
-		const fileargs = {
-			repopath,
-			filepath: "file",
-			content: "hello world",
-			encoding: null,
-			ref: "master",
-		}
-
-		// 移除仓库
-		rmdir("data");
-
-		// 主进程
-		config.master = true;
-		config.storePath = "data/master";
-		app.gitStore.setOptions({storePath: config.storePath});
-
-		let id = await git.saveFile({...fileargs, ref:undefined});
-		console.log(id);
-
-		config.master = false;
-		config.storePath = "data/slave";
-		app.gitStore.setOptions({storePath: config.storePath});
-
-		id = await git.saveFile(fileargs);
-		console.log(id);
-	});
+        commitId = list[2].commitId;
+        text = await git.getFileContent({ path, commitId });
+        //console.log("第三次提交内容: ", text);
+        assert(text, 'hello world 2');
+    });
 });
-

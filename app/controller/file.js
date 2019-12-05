@@ -12,14 +12,8 @@ class File extends Controller {
     }
 
     parseParams(rule = {}) {
-        const uid = '';
-        // const {uid} = this.authenticated();
-
         const params = this.validate({ ...rule, repopath: 'string' });
-
-        params.repopath = _path.join(`${uid}`, params.repopath);
         params.ref = params.ref || 'master';
-
         return params;
     }
 
@@ -54,13 +48,21 @@ class File extends Controller {
             this.ctx.set('Content-Type', mimeType);
             if (mimeType.indexOf('text/') === 0) {
             } else if (mimeType.indexOf('image/') === 0) {
-                this.ctx.set('Content-Disposition', `inline; filename=${filename}`);
+                this.ctx.set(
+                    'Content-Disposition',
+                    `inline; filename=${filename}`
+                );
             } else {
-                this.ctx.set('Content-Disposition', `attachment; filename=${filename}`);
+                this.ctx.set(
+                    'Content-Disposition',
+                    `attachment; filename=${filename}`
+                );
             }
         }
 
-        return this.success(file.binary ? file.content : file.content.toString());
+        return this.success(
+            file.binary ? file.content : file.content.toString()
+        );
     }
 
     async upload() {
@@ -83,7 +85,7 @@ class File extends Controller {
         });
 
         const data = await this.git.commit(params);
-        if (!data) return this.throw(500, "提交失败");
+        if (!data) return this.throw(500, '提交失败');
 
         return this.success(data);
     }
@@ -94,6 +96,7 @@ class File extends Controller {
             filepath: 'string',
             content: 'string_optional',
             message: 'string_optional',
+            committer: 'object_optional',
         });
 
         const data = await this.git.saveFile(params);
@@ -106,6 +109,7 @@ class File extends Controller {
             repopath: 'string',
             filepath: 'string',
             message: 'string_optional',
+            committer: 'object_optional',
         });
 
         const data = await this.git.deleteFile(params);
@@ -137,18 +141,6 @@ class File extends Controller {
 
         return this.success(tree);
     }
-
-    //async getTreeById() {
-        //const params = this.parseParams({
-            //repopath: 'string',
-            //id: 'string',
-            //recursive: 'boolean_optional',
-        //});
-
-        //const tree = await this.git.getTreeById(params);
-
-        //return this.success(tree);
-    //}
 
     async getArchive() {
         const params = this.parseParams({

@@ -15,6 +15,3 @@ exports.bodyParser = {
     jsonLimit: '10mb',
     formLimit: '10mb',
 };
-
-exports.middleware = [ 'authenticated' ];
-

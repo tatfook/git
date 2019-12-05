@@ -30,19 +30,16 @@ module.exports = {
         try {
             return JSON.stringify(obj);
         } catch (e) {
-            // console.log(e);
             throw e;
         }
     },
 
     fromJson(jsonStr) {
-        if (typeof (jsonStr) !== 'string') return jsonStr;
+        if (typeof jsonStr !== 'string') return jsonStr;
 
         try {
             return JSON.parse(jsonStr);
-        } catch (e) {
-            // console.log(e);
-        }
+        } catch (e) {}
 
         return;
     },

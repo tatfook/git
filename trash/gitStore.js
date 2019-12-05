@@ -1,4 +1,3 @@
-
 const _path = require('path');
 const _fs = require('fs');
 const _ = require('lodash');
@@ -9,8 +8,6 @@ class GitStore {
     constructor(opts) {
         this.storePath = opts.storePath || 'data';
     }
-
-
 }
 
 module.exports = GitStore;

@@ -5,21 +5,15 @@ const _path = require('path');
 const Controller = require('../core/controller.js');
 
 class Object_ extends Controller {
-
     get gitStore() {
         return this.app.gitStore;
     }
 
     parseParams(rule = {}) {
-        const { uid } = this.authenticated();
-
         const params = this.validate({ ...rule, path: 'string' });
-
-        const path = _path.join(uid, params.path);
-        const obj = _path.parse(path);
+        const obj = _path.parse(params.path);
         params.repopath = obj.dir;
         params.filepath = obj.base;
-
         return params;
     }
 
@@ -40,7 +34,7 @@ class Object_ extends Controller {
         const params = this.parseParams({
             path: 'string',
             content: 'string_optional',
-            committer: 'string_optional',
+            committer: 'object_optional',
             message: 'string_optional',
         });
 
@@ -52,7 +46,7 @@ class Object_ extends Controller {
     async destroy() {
         const params = this.parseParams({
             path: 'string',
-            committer: 'string_optional',
+            committer: 'object_optional',
             message: 'string_optional',
         });
 
@@ -72,7 +66,6 @@ class Object_ extends Controller {
 
         return this.success(list);
     }
-
 }
 
 module.exports = Object_;
