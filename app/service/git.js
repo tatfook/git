@@ -8,7 +8,6 @@ class GitService extends Service {
     }
 
     async saveFile(data) {
-        this.ctx.logger.error('---------------------', data);
         return await this.gitStore.saveFile(data);
     }
 

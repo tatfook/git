@@ -60,8 +60,6 @@ class Store {
         this.storePath = opts.storePath || this.storePath || 'data';
         this.timeout = opts.timeout || this.timeout || 10000; // 等待解锁时间
 
-        // this.storeMode = opts.storeMode || STORE_MODE_GIT; // GitStore  ObjectStore
-
         if (opts.author) {
             this.author = Git.Signature.now(
                 opts.author.name,
@@ -75,8 +73,6 @@ class Store {
         }
 
         mkdir(this.storePath);
-
-        // console.log("storePath:", this.storePath);
 
         // 创建存储目录
         if (!_fs.existsSync(this.storePath)) {
@@ -125,7 +121,6 @@ class Store {
     // 打开git仓库
     async openRepository({ repopath }) {
         const path = _path.join(this.gitPath, base64.encode(repopath));
-        // if (path.indexOf(this.gitPath) !== 0) throw new Error(`无效路径: ${path}`);
 
         // gitPath 也转成 git 仓库
         const exists = await _fs.exists(path);
@@ -289,11 +284,11 @@ class Store {
     }) {
         assert(repopath);
         assert(filepath);
+        const t = Date.now();
 
         // 参数预处理
         ref = this.formatRef({ ref, filepath });
         message = message || `save file ${filepath}`;
-        console.log(committer.name || defaultCommitter.name);
         committer = Git.Signature.now(
             committer.name || defaultCommitter.name,
             committer.email || defaultCommitter.email
@@ -363,6 +358,7 @@ class Store {
             );
             throw new Error(`提交失败, 文件: ${id}`);
         }
+        console.log(Date.now() - t, 'ms');
 
         return oid.tostrS();
     }
@@ -376,8 +372,8 @@ class Store {
         ref = this.formatRef({ ref, filepath });
         message = message || `delete file ${filepath}`;
         committer = Git.Signature.now(
-            committer.name || 'git-store',
-            committer.email || 'git-store@email.com'
+            committer.name || defaultCommitter.name,
+            committer.email || defaultCommitter.email
         );
 
         // 打开仓库
@@ -599,8 +595,6 @@ class Store {
                         return;
                     }
 
-                    // console.log(`stdout: ${stdout}`);
-                    // console.log(`stderr: ${stderr}`);
                     return resolve(archivePath);
                 }
             );
