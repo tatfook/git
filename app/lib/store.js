@@ -452,7 +452,6 @@ class Store {
         // 格式化成文件对象
         return blob
             ? {
-                  content: blob.content(),
                   size: blob.rawsize(),
                   binary: blob.isBinary(),
                   id: blob.id().tostrS(),
@@ -464,10 +463,6 @@ class Store {
                       name: commit.committer().name(),
                       email: commit.committer().email(),
                   },
-                  objectpath: this.getObjectPath({
-                      repopath,
-                      sha: blob.id().tostrS(),
-                  }),
               }
             : undefined;
     }

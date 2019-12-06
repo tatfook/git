@@ -68,11 +68,11 @@ class Repo extends Controller {
         const gitlabConfig = this.config.GitServer.gitlab;
         const exec = _util.promisify(child_process.exec);
         const fullPath = `${gitlabConfig.repopath}/${gitlab_username}/${gitlab_reponame}/ ${repoFullPath}`;
-        const result = await exec(
+        await exec(
             `sshpass -p ${gitlabConfig.password} rsync -r -e "ssh -o StrictHostKeyChecking=no" ${fullPath}`,
             {}
         );
-        this.ctx.logger.debug(result);
+        this.ctx.logger.info('synced: ', repoFullPath);
 
         return this.success();
     }
