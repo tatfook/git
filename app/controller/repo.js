@@ -39,12 +39,14 @@ class Repo extends Controller {
         this.success(true);
     }
 
+    /**
+     * sync repo from gitlab
+     * gitlabRepoUrl {string} gitlab repo url such as "http://git.kp.com/gitlab_www_hello/demo.git"
+     */
     async sync() {
-        const params = this.validate();
-        if (!params.project || !params.project.http_url) return this.success();
+        const { gitlabRepoUrl } = this.validate({ gitlabRepoUrl: 'string' });
 
-        const http_url = params.project.http_url;
-        const paths = http_url.split('/');
+        const paths = gitlabRepoUrl.split('/');
         const old_reponame = paths[paths.length - 1];
         const old_username = paths[paths.length - 2]; // eslint-disable-line
 
