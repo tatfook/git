@@ -40,27 +40,34 @@ class Repo extends Controller {
     }
 
     /**
-     * sync repo from gitlab
+     * sync repo from gitlab, makesure sshpass work on the git server.
      * gitlabRepoUrl {string} gitlab repo url such as "http://git.kp.com/gitlab_www_hello/demo.git"
+     * repopath {string} lcoal repo path such as "hello/demo"
+     * forceSync {boolean} force replace even already exist
      */
     async sync() {
-        const { gitlabRepoUrl } = this.validate({ gitlabRepoUrl: 'string' });
+        const { gitlabRepoUrl, repopath, forceSync } = this.validate({
+            repopath: 'string',
+            gitlabRepoUrl: 'string',
+            forceSync: 'boolean_optional',
+        });
+
+        const repoFullPath = this.app.gitStore.getRepoFullPath(repopath);
+        if (fs.existsSync(repoFullPath)) {
+            if (forceSync) {
+                await fs.remove(repoFullPath);
+            } else {
+                return this.success();
+            }
+        }
 
         const paths = gitlabRepoUrl.split('/');
-        const old_reponame = paths[paths.length - 1];
-        const old_username = paths[paths.length - 2]; // eslint-disable-line
-
-        const reponame = old_reponame.replace(/\.git$/, '');
-        const username = old_username
-            .replace('gitlab_www_', '')
-            .replace('gitlab_rls_', '');
+        const gitlab_reponame = paths[paths.length - 1];
+        const gitlab_username = paths[paths.length - 2]; // eslint-disable-line
 
         const gitlabConfig = this.config.GitServer.gitlab;
-        const repoFullPath = this.app.gitStore.getRepoFullPath(
-            `${username}/${reponame}`
-        );
         const exec = _util.promisify(child_process.exec);
-        const fullPath = `${gitlabConfig.repopath}/${old_username}/${old_reponame}/ ${repoFullPath}`;
+        const fullPath = `${gitlabConfig.repopath}/${gitlab_username}/${gitlab_reponame}/ ${repoFullPath}`;
         const result = await exec(
             `sshpass -p ${gitlabConfig.password} rsync -r -e "ssh -o StrictHostKeyChecking=no" ${fullPath}`,
             {}
