@@ -26,6 +26,7 @@ class File extends Controller {
 
         const file = await this.git.getFile(params).catch(() => undefined);
         if (!file) return this.fail('Not Found', 404);
+        delete (file, 'content'); // no need to put content data to repo info
 
         return this.success(file);
     }

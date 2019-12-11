@@ -456,6 +456,7 @@ class Store {
                   binary: blob.isBinary(),
                   id: blob.id().tostrS(),
                   mode: blob.filemode(),
+                  content: blob.content(),
                   message: commit.message(),
                   date: commit.date(),
                   commitId: commit.sha(),
