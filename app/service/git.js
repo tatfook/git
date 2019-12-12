@@ -46,6 +46,10 @@ class GitService extends Service {
     async getCommitInfo(data) {
         return await this.gitStore.getCommitInfo(data);
     }
+
+    getRepoFullPath(data) {
+        return this.gitStore.getRepoFullPath(data);
+    }
 }
 
 module.exports = GitService;

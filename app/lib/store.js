@@ -293,7 +293,6 @@ class Store {
         // 参数预处理
         ref = this.formatRef({ ref, filepath });
         message = message || `save file ${filepath}`;
-        console.log(committer.name || defaultCommitter.name);
         committer = Git.Signature.now(
             committer.name || defaultCommitter.name,
             committer.email || defaultCommitter.email
