@@ -14,6 +14,7 @@ module.exports = app => {
     router.delete(`${prefix}/repo`, repo.destroy); // 仓库删除
 
     router.post(`${prefix}/repo/sync`, repo.sync); // 仓库同步
+    router.get(`${prefix}/repo/commitInfo`, repo.commitInfo); // 获取commit信息
 
     // 仓库模式
     const file = controller.file;

@@ -42,6 +42,10 @@ class GitService extends Service {
     async createArchive(data) {
         return await this.gitStore.createArchive(data);
     }
+
+    async getCommitInfo(data) {
+        return await this.gitStore.getCommitInfo(data);
+    }
 }
 
 module.exports = GitService;

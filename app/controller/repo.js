@@ -39,6 +39,20 @@ class Repo extends Controller {
         this.success(true);
     }
 
+    async commitInfo() {
+        const { repopath, commitId, ref = 'master' } = this.validate({
+            repopath: 'string',
+            commitId: 'string_optional',
+            ref: 'string_optional',
+        });
+        const commit = await this.git.getCommitInfo({
+            repopath,
+            commitId,
+            ref,
+        });
+        this.success(commit);
+    }
+
     /**
      * sync repo from gitlab, makesure sshpass work on the git server.
      * gitlabRepoUrl {string} gitlab repo url such as "http://git.kp.com/gitlab_www_hello/demo.git"

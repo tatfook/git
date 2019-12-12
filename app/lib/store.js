@@ -619,6 +619,31 @@ class Store {
 
         return;
     }
+
+    // 获取commit
+    async getCommitInfo({ repopath, commitId, ref }) {
+        assert(repopath);
+        ref = this.formatRef({ ref });
+
+        // 打开仓库
+        const repo = await this.openRepository({ repopath });
+        if (!repo) throw new Error(`打开仓库失败: ${repopath}`);
+
+        // 获取commit
+        const commit = commitId
+            ? await repo.getCommit(commitId)
+            : await this.getRefCommit({ repo, ref });
+
+        return {
+            committer: {
+                name: commit.committer().name(),
+                email: commit.committer().email(),
+            },
+            message: commit.message(),
+            date: commit.date(),
+            commitId: commit.sha(),
+        };
+    }
 }
 
 module.exports = Store;
