@@ -133,6 +133,7 @@ class File extends Controller {
         const params = this.parseParams({
             repopath: 'string',
             recursive: 'boolean_optional',
+            commitId: 'string_optional',
             ref: 'string_optional',
         });
 

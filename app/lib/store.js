@@ -517,7 +517,7 @@ class Store {
         repo = repo || (await this.openRepository({ repopath }));
         if (!repo) return [];
 
-        const getTree = async (id, recursive, prefix) => {
+        const getRealTree = async (id, recursive, prefix) => {
             const tree = await repo.getTree(id);
             if (!tree) return [];
 
@@ -534,7 +534,7 @@ class Store {
                     id: entry.id().tostrS(),
                 };
                 if (recursive && data.isTree) {
-                    data.children = await getTree(
+                    data.children = await getRealTree(
                         data.id,
                         recursive,
                         data.path
@@ -545,11 +545,18 @@ class Store {
             return children;
         };
 
-        return await getTree(id, recursive, prefix);
+        return await getRealTree(id, recursive, prefix);
     }
 
     // 获取树
-    async getTree({ repopath, filepath = '', ref, recursive, prefix = '' }) {
+    async getTree({
+        repopath,
+        filepath = '',
+        commitId,
+        ref,
+        recursive,
+        prefix = '',
+    }) {
         assert(repopath);
         // 格式化引用
         ref = this.formatRef({ ref, filepath });
@@ -558,7 +565,11 @@ class Store {
         const repo = await this.openRepository({ repopath });
         if (!repo) throw new Error(`打开仓库失败: ${repopath}`);
 
-        const commit = await this.getRefCommit({ repo, ref });
+        // 获取commit
+        const commit = commitId
+            ? await repo.getCommit(commitId)
+            : await this.getRefCommit({ repo, ref });
+
         if (commit == null) return [];
 
         let treeId = commit.treeId();
