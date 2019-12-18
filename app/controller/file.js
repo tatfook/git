@@ -96,6 +96,7 @@ class File extends Controller {
             content: 'string_optional',
             message: 'string_optional',
             committer: 'object_optional',
+            encoding: 'string_optional',
         });
 
         const data = await this.git.saveFile(params);
