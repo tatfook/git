@@ -154,7 +154,7 @@ class File extends Controller {
         });
 
         const filepath = await this.git.createArchive(params);
-        const filestream = _fs.createReadStream(filepath, { emitClose: true });
+        const filestream = _fs.createReadStream(filepath);
 
         filestream.on('close', () => {
             _fs.unlinkSync(filepath);

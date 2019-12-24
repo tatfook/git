@@ -585,7 +585,7 @@ class Store {
     // 创建归档文件  zip tar tar.gz
     async createArchive({
         repopath,
-        ref = 'ref/heads/master',
+        ref = 'master',
         format = 'zip',
         archivePath,
     }) {
@@ -595,7 +595,7 @@ class Store {
 
         return new Promise((resolve, reject) => {
             child_process.exec(
-                `git archive --format=${format} -o ${archivePath} ${ref}`,
+                `git archive -o ${archivePath} ${ref}`,
                 {
                     cwd: fullpath,
                 },
@@ -604,9 +604,6 @@ class Store {
                         reject(`执行错误: ${error}`);
                         return;
                     }
-
-                    // console.log(`stdout: ${stdout}`);
-                    // console.log(`stderr: ${stderr}`);
                     return resolve(archivePath);
                 }
             );
