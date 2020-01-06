@@ -590,12 +590,13 @@ class Store {
         archivePath,
     }) {
         const fullpath = this.getRepoFullPath(repopath);
+        const reponame = repopath.split('/')[1];
         archivePath =
-            archivePath || _path.join(fullpath, `archive-${ref}.${format}`);
+            archivePath || _path.join(fullpath, `${reponame}-${ref}.${format}`);
 
         return new Promise((resolve, reject) => {
             child_process.exec(
-                `git archive -o ${archivePath} ${ref}`,
+                `git archive --prefix=${reponame}/ -o ${archivePath} ${ref}`,
                 {
                     cwd: fullpath,
                 },
