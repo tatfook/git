@@ -45,7 +45,7 @@ class File extends Controller {
         const mimeType = mime.getType(filename);
         if (mimeType) {
             this.ctx.set('Content-Type', mimeType);
-            if (mimeType.indexOf('text/') !== 0) {
+            if (!mimeType.match('text') && !mimeType.match('xml')) {
                 this.ctx.set('Content-Description', 'File Transfer');
                 this.ctx.set('Content-Type', 'application/octet-stream');
                 this.ctx.set('Content-Transfer-Encoding', 'binary');
