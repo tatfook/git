@@ -26,6 +26,20 @@ class File extends Controller {
 
         const file = await this.git.getFile(params).catch(() => undefined);
         if (!file) return this.fail('Not Found', 404);
+        if (file.binary) return this.fail('Invalid file type: Binary', 400);
+
+        return this.success(file.content.toString());
+    }
+
+    async info() {
+        const params = this.parseParams({
+            repopath: 'string',
+            filepath: 'string',
+            commitId: 'string_optional',
+        });
+
+        const file = await this.git.getFile(params).catch(() => undefined);
+        if (!file) return this.fail('Not Found', 404);
         delete (file, 'content'); // no need to put content data to repo info
 
         return this.success(file);
@@ -45,27 +59,24 @@ class File extends Controller {
         const mimeType = mime.getType(filename);
         if (mimeType) {
             this.ctx.set('Content-Type', mimeType);
-            if (!mimeType.match('text') && !mimeType.match('xml')) {
-                this.ctx.set('Content-Description', 'File Transfer');
-                this.ctx.set('Content-Type', 'application/octet-stream');
-                this.ctx.set('Content-Transfer-Encoding', 'binary');
-                if (mimeType.indexOf('image/') === 0) {
-                    this.ctx.set(
-                        'Content-Disposition',
-                        `inline; filename=${filename}`
-                    );
-                } else {
-                    this.ctx.set(
-                        'Content-Disposition',
-                        `attachment; filename=${filename}`
-                    );
-                }
+            this.ctx.set('Content-Description', 'File Transfer');
+            this.ctx.set('Content-Transfer-Encoding', 'binary');
+            if (mimeType.match('image') || mimeType.match('text')) {
+                this.ctx.set(
+                    'Content-Disposition',
+                    `inline; filename=${filename}`
+                );
+            } else {
+                this.ctx.set(
+                    'Content-Disposition',
+                    `attachment; filename=${filename}`
+                );
             }
+        } else {
+            return this.ctx.error('Invalid File Type');
         }
 
-        return this.success(
-            file.binary ? file.content : file.content.toString()
-        );
+        return this.success(file.content);
     }
 
     async upload() {

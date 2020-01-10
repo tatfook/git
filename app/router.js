@@ -18,8 +18,9 @@ module.exports = app => {
 
     // 仓库模式
     const file = controller.file;
-    router.get(`${prefix}/file`, file.show); // 获取文件
-    router.get(`${prefix}/file/raw`, file.raw); // 获取原生文件
+    router.get(`${prefix}/file`, file.show); // 获取文件内容
+    router.get(`${prefix}/file/info`, file.info); // 获取文件信息
+    router.get(`${prefix}/file/raw`, file.raw); // 获取二进制文件
     router.post(`${prefix}/file/upload`, file.upload); // 文件上传
     router.post(`${prefix}/file/commit`, file.commit); // 文件提交
     router.post(`${prefix}/file`, file.save); // 创建文件
