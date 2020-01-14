@@ -57,25 +57,19 @@ class File extends Controller {
         if (!file) return this.fail('Not Found', 404);
         this.ctx.set('Cache-Control', 'public, max-age=86400');
         const mimeType = mime.getType(filename);
+        this.ctx.set('Content-Disposition', `attachment; filename=${filename}`);
+        this.ctx.set('Content-Description', 'File Transfer');
+        this.ctx.set('Content-Transfer-Encoding', 'binary');
+        this.ctx.set('Content-Type', 'application/octet-stream');
         if (mimeType) {
             this.ctx.set('Content-Type', mimeType);
-            this.ctx.set('Content-Description', 'File Transfer');
-            this.ctx.set('Content-Transfer-Encoding', 'binary');
             if (mimeType.match('image') || mimeType.match('text')) {
                 this.ctx.set(
                     'Content-Disposition',
                     `inline; filename=${filename}`
                 );
-            } else {
-                this.ctx.set(
-                    'Content-Disposition',
-                    `attachment; filename=${filename}`
-                );
             }
-        } else {
-            return this.ctx.error('Invalid File Type');
         }
-
         return this.success(file.content);
     }
 
