@@ -24,6 +24,7 @@ module.exports = app => {
     router.post(`${prefix}/file/upload`, file.upload); // 文件上传
     router.post(`${prefix}/file/commit`, file.commit); // 文件提交
     router.post(`${prefix}/file`, file.save); // 创建文件
+    router.post(`${prefix}/file/binary`, file.saveBinary); // 创建文件(二进制流)
     router.delete(`${prefix}/file`, file.destroy); // 删除文件
     router.get(`${prefix}/file/history`, file.history); // 获取文件历史
     router.get(`${prefix}/file/tree`, file.getTreeByPath); // 通过路径获取Tree

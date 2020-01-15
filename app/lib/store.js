@@ -286,6 +286,7 @@ class Store {
         ref,
         committer = {},
         encoding,
+        buf,
     }) {
         assert(repopath);
         assert(filepath);
@@ -303,7 +304,7 @@ class Store {
         if (!repo) throw new Error(`打开仓库失败: ${repopath}`);
 
         // 写文件对象
-        const buf = Buffer.from(content, encoding);
+        if (!buf) buf = Buffer.from(content, encoding);
         const id = await Git.Blob.createFromBuffer(repo, buf, buf.length);
 
         // 针对仓库(repo)+引用(ref)同步操作
@@ -366,6 +367,32 @@ class Store {
         return oid.tostrS();
     }
 
+    async saveBinaryFile(
+        binaryData,
+        { repopath, filepath, message, ref, committer = {}, encoding }
+    ) {
+        function readStream(stream) {
+            return new Promise((resolve, reject) => {
+                const bufs = [];
+
+                stream.on('data', chunk => bufs.push(chunk));
+                stream.on('end', () => resolve(bufs));
+                stream.on('error', error => reject(error));
+            });
+        }
+        const bufs = await readStream(binaryData);
+        const buf = Buffer.concat(bufs);
+        return this.saveFile({
+            repopath,
+            filepath,
+            message,
+            ref,
+            committer,
+            encoding,
+            buf,
+        });
+    }
+
     // 删除文件
     async deleteFile({ repopath, filepath, ref, message, committer = {} }) {
         assert(repopath);
@@ -425,7 +452,7 @@ class Store {
     }
 
     // 获取文件
-    async getFile({ repopath, filepath, commitId, ref }) {
+    async getBlob({ repopath, filepath, commitId, ref }) {
         assert(repopath);
         assert(filepath);
 
@@ -448,30 +475,44 @@ class Store {
         // 获取对象 blob
         const blob = await treeEntry.getBlob();
 
-        // 格式化成文件对象
-        return blob
-            ? {
-                  size: blob.rawsize(),
-                  binary: blob.isBinary(),
-                  id: blob.id().tostrS(),
-                  mode: blob.filemode(),
-                  content: blob.content(),
-                  message: commit.message(),
-                  date: commit.date(),
-                  commitId: commit.sha(),
-                  committer: {
-                      name: commit.committer().name(),
-                      email: commit.committer().email(),
-                  },
-              }
-            : undefined;
+        return {
+            blob,
+            commit,
+        };
+    }
+
+    async getFileInfo({ repopath, filepath, commitId, ref }) {
+        const { blob, commit } = await this.getBlob({
+            repopath,
+            filepath,
+            commitId,
+            ref,
+        });
+        return {
+            size: blob.rawsize(),
+            binary: blob.isBinary(),
+            id: blob.id().tostrS(),
+            mode: blob.filemode(),
+            message: commit.message(),
+            date: commit.date(),
+            commitId: commit.sha(),
+            committer: {
+                name: commit.committer().name(),
+                email: commit.committer().email(),
+            },
+        };
     }
 
     // 获取文件内容
     async getFileContent({ repopath, filepath, commitId, ref }) {
-        const file = await this.getFile({ repopath, filepath, commitId, ref });
+        const { blob } = await this.getBlob({
+            repopath,
+            filepath,
+            commitId,
+            ref,
+        });
 
-        return (file || {}).content;
+        return blob.content();
     }
 
     // 文件历史记录

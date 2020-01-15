@@ -8,43 +8,51 @@ class GitService extends Service {
     }
 
     async saveFile(data) {
-        return await this.gitStore.saveFile(data);
+        return this.gitStore.saveFile(data);
+    }
+
+    async saveBinaryFile(streamData, payload) {
+        return this.gitStore.saveBinaryFile(streamData, payload);
     }
 
     async deleteFile(data) {
-        return await this.gitStore.deleteFile(data);
+        return this.gitStore.deleteFile(data);
     }
 
-    async getFile(data) {
-        return await this.gitStore.getFile(data);
+    async getFileInfo(data) {
+        return this.gitStore.getFileInfo(data);
+    }
+
+    async getFileContent(data) {
+        return this.gitStore.getFileContent(data);
     }
 
     async upload(data) {
-        return await this.gitStore.upload(data);
+        return this.gitStore.upload(data);
     }
 
     async commit(data) {
-        return await this.gitStore.commit(data);
+        return this.gitStore.commit(data);
     }
 
     async history(data) {
-        return await this.gitStore.history(data);
+        return this.gitStore.history(data);
     }
 
     async getTree(data) {
-        return await this.gitStore.getTree(data);
+        return this.gitStore.getTree(data);
     }
 
     async getTreeById(data) {
-        return await this.gitStore.getTreeById(data);
+        return this.gitStore.getTreeById(data);
     }
 
     async createArchive(data) {
-        return await this.gitStore.createArchive(data);
+        return this.gitStore.createArchive(data);
     }
 
     async getCommitInfo(data) {
-        return await this.gitStore.getCommitInfo(data);
+        return this.gitStore.getCommitInfo(data);
     }
 
     getRepoFullPath(data) {

@@ -24,11 +24,12 @@ class File extends Controller {
             commitId: 'string_optional',
         });
 
-        const file = await this.git.getFile(params).catch(() => undefined);
-        if (!file) return this.fail('Not Found', 404);
-        if (file.binary) return this.fail('Invalid file type: Binary', 400);
+        const content = await this.git
+            .getFileContent(params)
+            .catch(e => this.ctx.logger.error(e));
+        if (!content) return this.fail('Not Found', 404);
 
-        return this.success(file.content.toString());
+        return this.success(content.toString());
     }
 
     async info() {
@@ -38,7 +39,9 @@ class File extends Controller {
             commitId: 'string_optional',
         });
 
-        const file = await this.git.getFile(params).catch(() => undefined);
+        const file = await this.git
+            .getFileInfo(params)
+            .catch(e => this.ctx.logger.error(e));
         if (!file) return this.fail('Not Found', 404);
         delete (file, 'content'); // no need to put content data to repo info
 
@@ -53,8 +56,10 @@ class File extends Controller {
         });
 
         const filename = _path.basename(params.filepath);
-        const file = await this.git.getFile(params).catch(() => undefined);
-        if (!file) return this.fail('Not Found', 404);
+        const content = await this.git
+            .getFileContent(params)
+            .catch(e => this.ctx.logger.error(e));
+        if (!content) return this.fail('Not Found', 404);
         this.ctx.set('Cache-Control', 'public, max-age=86400');
         const mimeType = mime.getType(filename);
         this.ctx.set('Content-Disposition', `attachment; filename=${filename}`);
@@ -70,7 +75,7 @@ class File extends Controller {
                 );
             }
         }
-        return this.success(file.content);
+        return this.success(content);
     }
 
     async upload() {
@@ -109,6 +114,20 @@ class File extends Controller {
         });
 
         const data = await this.git.saveFile(params);
+
+        return this.success(data);
+    }
+
+    async saveBinary() {
+        const payload = this.parseParams({
+            repopath: 'string',
+            filepath: 'string',
+            message: 'string_optional',
+            committer: 'object_optional',
+            encoding: 'string_optional',
+        });
+        const streamData = this.ctx.req;
+        const data = await this.git.saveBinaryFile(streamData, payload);
 
         return this.success(data);
     }

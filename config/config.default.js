@@ -12,6 +12,6 @@ exports.security = {
 };
 
 exports.bodyParser = {
-    jsonLimit: '10mb',
-    formLimit: '10mb',
+    jsonLimit: '100mb',
+    formLimit: '100mb',
 };
