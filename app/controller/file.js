@@ -43,7 +43,6 @@ class File extends Controller {
             .getFileInfo(params)
             .catch(e => this.ctx.logger.error(e));
         if (!file) return this.fail('Not Found', 404);
-        delete (file, 'content'); // no need to put content data to repo info
 
         return this.success(file);
     }
