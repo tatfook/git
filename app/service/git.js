@@ -19,12 +19,16 @@ class GitService extends Service {
         return this.gitStore.deleteFile(data);
     }
 
+    async getBlob(data) {
+        return this.gitStore.getBlob(data);
+    }
+
     async getFileInfo(data) {
         return this.gitStore.getFileInfo(data);
     }
 
-    async getFileContent(data) {
-        return this.gitStore.getFileContent(data);
+    async getFileRaw(data) {
+        return this.gitStore.getFileRaw(data);
     }
 
     async upload(data) {

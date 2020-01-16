@@ -504,7 +504,7 @@ class Store {
     }
 
     // 获取文件内容
-    async getFileContent({ repopath, filepath, commitId, ref }) {
+    async getFileRaw({ repopath, filepath, commitId, ref }) {
         const { blob } = await this.getBlob({
             repopath,
             filepath,

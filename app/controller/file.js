@@ -24,12 +24,15 @@ class File extends Controller {
             commitId: 'string_optional',
         });
 
-        const content = await this.git
-            .getFileContent(params)
+        const { blob } = await this.git
+            .getBlob(params)
             .catch(e => this.ctx.logger.error(e));
-        if (!content) return this.fail('Not Found', 404);
+        if (!blob) return this.fail('Not Found', 404);
+        if (blob.isBinary()) {
+            return this.fail('Please use raw api to get binary data', 400);
+        }
 
-        return this.success(content.toString());
+        return this.success(blob.toString());
     }
 
     async info() {
@@ -55,10 +58,10 @@ class File extends Controller {
         });
 
         const filename = _path.basename(params.filepath);
-        const content = await this.git
-            .getFileContent(params)
+        const raw = await this.git
+            .getFileRaw(params)
             .catch(e => this.ctx.logger.error(e));
-        if (!content) return this.fail('Not Found', 404);
+        if (!raw) return this.fail('Not Found', 404);
         this.ctx.set('Cache-Control', 'public, max-age=86400');
         const mimeType = mime.getType(filename);
         this.ctx.set('Content-Disposition', `attachment; filename=${filename}`);
@@ -74,7 +77,7 @@ class File extends Controller {
                 );
             }
         }
-        return this.success(content);
+        return this.success(raw);
     }
 
     async upload() {
