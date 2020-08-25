@@ -182,10 +182,6 @@ class File extends Controller {
         const filepath = await this.git.createArchive(params);
         const filestream = _fs.createReadStream(filepath);
 
-        filestream.on('close', () => {
-            _fs.unlinkSync(filepath);
-        });
-
         this.ctx.set('Content-Description', 'File Transfer');
         this.ctx.set('Content-Type', 'application/octet-stream');
         this.ctx.set('Content-Transfer-Encoding', 'binary');

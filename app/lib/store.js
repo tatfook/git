@@ -101,6 +101,16 @@ class Store {
             const ok = _fs.mkdirSync(this.lockPath);
         }
 
+        // 创建Download目录
+        this.downloadPath =
+            opts.downloadPath || _path.join(this.storePath, 'download');
+        if (!_path.isAbsolute(this.downloadPath)) {
+            this.downloadPath = _path.join(process.cwd(), this.downloadPath);
+        }
+        if (!_fs.existsSync(this.downloadPath)) {
+            const ok = _fs.mkdirSync(this.downloadPath);
+        }
+
         // 异步队列
         this.asyncQueue.setFileLock(true, this.lockPath);
     }
@@ -110,6 +120,13 @@ class Store {
         if (_path.isAbsolute(repopath)) return repopath;
 
         return _path.join(this.gitPath, base64.encode(repopath));
+    }
+
+    // 获取仓库全路径
+    getRepoZipPath(repopath) {
+        if (_path.isAbsolute(repopath)) return repopath;
+
+        return _path.join(this.gitPath, '../download/');
     }
 
     // 获取对象路径
@@ -631,25 +648,31 @@ class Store {
         archivePath,
     }) {
         const fullpath = this.getRepoFullPath(repopath);
+        const zippath = this.getRepoZipPath(repopath);
         const prefix = repopath.split('/').join('_');
         archivePath =
-            archivePath || _path.join(fullpath, `${prefix}-${ref}.${format}`);
+            archivePath || _path.join(zippath, `${prefix}-${ref}.${format}`);
 
-        return new Promise((resolve, reject) => {
-            child_process.exec(
-                `git archive --prefix=${prefix}/ -o ${archivePath} ${ref}`,
-                {
-                    cwd: fullpath,
-                },
-                (error, stdout, stderr) => {
-                    if (error) {
-                        reject(`执行错误: ${error}`);
-                        return;
+        // FIXME: 没有彻底解决多请求执行archive指令的问题
+        if (_fs.existsSync(archivePath) && ref != 'master') {
+            return archivePath;
+        } else {
+            return new Promise((resolve, reject) => {
+                child_process.exec(
+                    `git archive --prefix=${prefix}/ -o ${archivePath} ${ref}`,
+                    {
+                        cwd: fullpath,
+                    },
+                    (error, stdout, stderr) => {
+                        if (error) {
+                            reject(`执行错误: ${error}`);
+                            return;
+                        }
+                        return resolve(archivePath);
                     }
-                    return resolve(archivePath);
-                }
-            );
-        });
+                );
+            });
+        }
     }
 
     // 改名
